@@ -11,6 +11,7 @@
 */
 
 #define IR_PIN 2
+#define MENU_SIZE 3
 
 // Variables
 char controller_input[20];
@@ -48,27 +49,98 @@ void setup() {
 	IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);  // Starts the receiver and enables build-in LED feedback upon receiving a signal
   	lcd.init();  // Starts LCD Display
   	lcd.backlight();  // Enables LCD backlight
+  
+  	// Welcome message
+    welcome();
 }
 
 void loop() {
-  	getControllerInput();
+  	menu();
+  	// getControllerInput();
 }
 
 /* FUNCTIONS */
-void getControllerInput() {
-  	uint16_t cmd;
-    while (cmd != K_CONTINUE) {
-        if (IrReceiver.decode()) {
-			// Stores received cmd
-          	lcd.setCursor(8,0);
-          	lcd.print(IrReceiver.decodedIRData.command);
+void welcome() {
+    lcd.setCursor(3,0);
+    lcd.print("Smart Home");
+    lcd.setCursor(2,1);
+    lcd.print("AAC -- 22/23");
+    delay(5000);
+    lcd.clear();
+}
+
+// Main menu
+void menu() {
+  	int currentMenu = 0;
+  
+  	// Menu Header
+  	lcd.setCursor(6,0);
+  	lcd.print("Menu");
+  
+    while (1) {
+        switch (currentMenu) {
+            case 0:
+                // Menu 1 - Lights
+                lcd.setCursor(0,1);
+                lcd.print("<    Lights    >");
+                getMenuInput(&currentMenu);
+                break;
+          	
+          	case 1:
+          		// Menu 2 - Temperature
+          		lcd.setCursor(0,1);
+          		lcd.print("<     Temp     >");
+          		getMenuInput(&currentMenu);
+          		break;
+          	case 2:
+          		// Menu 3 - TODO
+          		lcd.setCursor(0,1);
+          		lcd.print("<    Menu 3    >");
+          		getMenuInput(&currentMenu);
+          		break;
         }
-    	IrReceiver.resume();
     }
 }
 
+void getMenuInput(int *currentMenuIndex) {
+	int input_cmd;
+    while (1) {
+      	if (IrReceiver.decode()) {
+            // Stores received cmd
+            input_cmd = decodeInput(IrReceiver.decodedIRData.command);
+            switch (input_cmd) {
+            	case K_LEFT:
+              		*currentMenuIndex = (*currentMenuIndex - 1) < 0 ? MENU_SIZE - 1 : (*currentMenuIndex - 1) % MENU_SIZE;
+              		IrReceiver.resume();
+              		return;
+              	case K_RIGHT:
+              		*currentMenuIndex = (*currentMenuIndex + 1) % MENU_SIZE;
+              		IrReceiver.resume();
+              		return;
+              	case K_CONTINUE:
+              		Serial.println("YOLO");
+              		IrReceiver.resume();
+              		return;
+            }
+		}
+    }
+}
+
+// Gets Input from IR Controller
+void getControllerInput() {
+  	int input_cmd;
+    while (input_cmd != K_CONTINUE) {
+        if (IrReceiver.decode()) {
+			// Stores received cmd
+          	input_cmd = decodeInput(IrReceiver.decodedIRData.command);
+            IrReceiver.resume();
+        }
+    }
+  	// TODO - finish this
+}
+
 // Decodes Controller Input, return -1 on invalid input
-int decodeInput(int input) {
+int decodeInput(uint16_t input) {
     switch (input) {
       	case 0x0:
       		return K_ONOFF;

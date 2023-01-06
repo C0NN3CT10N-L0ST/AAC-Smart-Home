@@ -57,18 +57,17 @@ Adafruit_NeoPixel lights = Adafruit_NeoPixel(NEOPIXEL_LED_COUNT, NEOPIXEL_PIN, N
 void setup() {
 	Serial.begin(9600);  // Begins serial communication
 	IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);  // Starts the receiver and enables build-in LED feedback upon receiving a signal
-	lcd.init();  // Starts LCD Display
-	lcd.backlight();  // Enables LCD backlight
-	lights.begin();  // Starts Lights
-	lights.clear();
-
-	setLightsRGBColor(254,254,254);
-	// Welcome message
-	welcome();
+  	lcd.init();  // Starts LCD Display
+  	lcd.backlight();  // Enables LCD backlight
+  	lights.begin();  // Starts Lights
+  	lights.clear();
+  
+  	// Welcome message
+    welcome();
 }
 
 void loop() {
-	mainMenu();
+  	mainMenu();
 }
 
 /* FUNCTIONS */
@@ -83,107 +82,109 @@ void welcome() {
 
 // Main menu
 void mainMenu() {
-	int8_t currentMenuIndex = 0;
-	int8_t currentSubmenuSelected = -1;
-
-	resetMainMenu(&currentMenuIndex);
+  	int8_t currentMenuIndex = 0;
+  	int8_t currentSubmenuSelected = -1;
   
-	while (1) {
-		switch (currentMenuIndex) {
-			case 0:
-				// Menu 1 - Lights
-				lcd.setCursor(0,1);
-				lcd.print("<    Lights    >");
-				break;
-			
-			case 1:
-				// Menu 2 - Temperature
-				lcd.setCursor(0,1);
-				lcd.print("<     Temp     >");
-				break;
-			case 2:
-				// Menu 3 - TODO
-				lcd.setCursor(0,1);
-				lcd.print("<    Menu 3    >");
-				break;
-		}
-
-		getMenuInput(&currentMenuIndex, &currentSubmenuSelected);
-		executeSubmenu(&currentSubmenuSelected, &currentMenuIndex);
-	}
+  	resetMainMenu(&currentMenuIndex);
+  
+    while (1) {
+        switch (currentMenuIndex) {
+            case 0:
+                // Menu 1 - Lights
+                lcd.setCursor(0,1);
+                lcd.print("<    Lights    >");
+                break;
+          	
+          	case 1:
+          		// Menu 2 - Temperature
+          		lcd.setCursor(0,1);
+          		lcd.print("<     Temp     >");
+          		break;
+          	case 2:
+          		// Menu 3 - TODO
+          		lcd.setCursor(0,1);
+          		lcd.print("<    Menu 3    >");
+          		break;
+        }
+      
+      	getMenuInput(&currentMenuIndex, &currentSubmenuSelected);
+      	executeSubmenu(&currentSubmenuSelected, &currentMenuIndex);
+    }
 }
 
 void resetMainMenu(int8_t *currentMenuIndex) {
-	lcd.clear();
-	// Menu Header
-	lcd.setCursor(6,0);
-	lcd.print("Menu");
-	// Resets current menu index
-	lcd.setCursor(0,1);
-	lcd.print("<    Lights    >");
-	*currentMenuIndex = 0;
+  	lcd.clear();
+  	// Menu Header
+  	lcd.setCursor(6,0);
+  	lcd.print("Menu");
+  	// Resets current menu index
+  	lcd.setCursor(0,1);
+    lcd.print("<    Lights    >");
+  	*currentMenuIndex = 0;
 }
 
 // Main menu navigation
 void getMenuInput(int8_t *currentMenuIndex, int8_t *currentSubmenu) {
-	int8_t input_cmd;
-	while (1) {
-		if (IrReceiver.decode()) {
-			// Stores received cmd
-			input_cmd = decodeInput(IrReceiver.decodedIRData.command);
-			switch (input_cmd) {
-				case K_LEFT:
-					*currentMenuIndex = (*currentMenuIndex - 1) < 0 ? MENU_SIZE - 1 : (*currentMenuIndex - 1) % MENU_SIZE;
-					IrReceiver.resume();
-					return;
-				case K_RIGHT:
-					*currentMenuIndex = (*currentMenuIndex + 1) % MENU_SIZE;
-					IrReceiver.resume();
-					return;
-				case K_CONTINUE:
-					/* Selects current submenu */
-					*currentSubmenu = *currentMenuIndex;
-					IrReceiver.resume();
-					return;
-			}
+  	int8_t input_cmd = -1;
+    while (1) {
+      	// Stores received cmd
+      	input_cmd = getControllerInput();
+      	if (input_cmd != -1) {
+            switch (input_cmd) {
+            	case K_LEFT:
+              		*currentMenuIndex = (*currentMenuIndex - 1) < 0 ? MENU_SIZE - 1 : (*currentMenuIndex - 1) % MENU_SIZE;
+              		IrReceiver.resume();
+              		return;
+              	case K_RIGHT:
+              		*currentMenuIndex = (*currentMenuIndex + 1) % MENU_SIZE;
+              		IrReceiver.resume();
+              		return;
+              	case K_CONTINUE:
+              		/* Selects current submenu */
+             		*currentSubmenu = *currentMenuIndex;
+              		IrReceiver.resume();
+              		return;
+            }
+          	// Resets input_cmd var
+          	input_cmd = -1;
 		}
-	}
+    }
 }
 
 // Executes selected submenu
 void executeSubmenu(int8_t *submenu, int8_t *currentMenuIndex) {
-	// Checks which subemnu to execute
-	switch (*submenu) {
-		case 0:
-			lightsMenu();
-			resetMainMenu(currentMenuIndex);
-			break;
-		case 1:
-			// TODO
-			resetMainMenu(currentMenuIndex);
-			break;
-		case 2:
-			// TODO
-			resetMainMenu(currentMenuIndex);
-			break;
-	}
-	// Resets current submenu
-	*submenu = -1;
+  	// Checks which subemnu to execute
+    switch (*submenu) {
+    	case 0:
+      		lightsMenu();
+      		resetMainMenu(currentMenuIndex);
+      		break;
+      	case 1:
+      		// TODO
+      		resetMainMenu(currentMenuIndex);
+      		break;
+      	case 2:
+      		// TODO
+      		resetMainMenu(currentMenuIndex);
+      		break;
+    }
+  	// Resets current submenu
+  	*submenu = -1;
 }
 
 // Lights Menu
 void lightsMenu() {
-	uint8_t cmd_input;
+  	uint8_t cmd_input;
 	lcd.clear();
-	lcd.setCursor(5,0);
-	lcd.print("Lights");
-	lcd.setCursor(2,1);
-	lcd.print("Status:");
+  	lcd.setCursor(5,0);
+  	lcd.print("Lights");
+  	lcd.setCursor(2,1);
+  	lcd.print("Status:");
   
     while (1) {
       	lcd.setCursor(10,1);
         if (lightsON) {
-        	lcd.print(" ON");
+          	lcd.print(" ON");
         } else {
         	lcd.print("OFF");
         }
@@ -192,7 +193,7 @@ void lightsMenu() {
       	cmd_input = getControllerInput();
       	// Turns lights ON/OFF based on input
         if (cmd_input == K_CONTINUE) {
-        	lightsON = !lightsON;
+        	switchLights();
         }
       
         if (cmd_input == K_FUNCSTOP) {
@@ -201,15 +202,25 @@ void lightsMenu() {
     }
 }
 
+void switchLights() {
+	lightsON = !lightsON;
+    if (lightsON) {
+		setLightsRGBColor(254,254,254);
+    } else {
+    	lights.clear();
+      	lights.show();
+    }
+}
+
 // Gets Input from IR Controller
 int8_t getControllerInput() {
-	uint8_t cmd;
+  	uint8_t cmd;
     if (IrReceiver.decode()) {
         cmd = decodeInput(IrReceiver.decodedIRData.command);
         IrReceiver.resume();
       	return cmd;
     }
-	return -1;
+  	return -1;
 }
 
 // Decodes Controller Input, return -1 on invalid input
@@ -265,8 +276,8 @@ uint8_t decodeInput(uint16_t input) {
 // Sets Lights Color
 void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
     lights.clear();
-	for(int i = 0; i < NEOPIXEL_LED_COUNT; i++) {
-		lights.setPixelColor(i, lights.Color(red, green, blue));
-		lights.show();
-	}
+  	for(int i = 0; i < NEOPIXEL_LED_COUNT; i++) {
+        lights.setPixelColor(i, lights.Color(red, green, blue));
+        lights.show();
+  	}
 }

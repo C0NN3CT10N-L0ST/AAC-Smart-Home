@@ -16,6 +16,7 @@
 #define IR_PIN 2
 #define NEOPIXEL_PIN 3
 #define NEOPIXEL_LED_COUNT 7
+#define TEMP_PIN A0
 #define MENU_SIZE 3
 
 // Variables
@@ -61,6 +62,7 @@ void setup() {
   	lcd.backlight();  // Enables LCD backlight
   	lights.begin();  // Starts Lights
   	lights.clear();
+  	pinMode(TEMP_PIN, INPUT);
   
   	// Welcome message
     welcome();
@@ -160,7 +162,7 @@ void executeSubmenu(int8_t *submenu, int8_t *currentMenuIndex) {
       		resetMainMenu(currentMenuIndex);
       		break;
       	case 1:
-      		// TODO
+      		tempMenu();
       		resetMainMenu(currentMenuIndex);
       		break;
       	case 2:
@@ -209,6 +211,55 @@ void switchLights() {
     } else {
     	lights.clear();
       	lights.show();
+    }
+}
+
+// Temperature Menu
+void tempMenu(){
+    int8_t temp_input1 = -1, temp_input2 = -1, temp_input3, resultTemp;
+    lcd.clear();
+    // Read the temperature sensor
+    float temp = analogRead(TEMP_PIN);
+    // Converts the reading to voltage
+    temp = (temp / 1024.0) * 5000;
+    // Converts to ºC
+    temp = (temp - 500) / 10;
+    // Converts the valeu to String, to be able to print in lcd
+    lcd.setCursor(3,0);
+    lcd.print("Temp:");
+    lcd.setCursor(10,0);
+    lcd.print((int)temp);
+    lcd.setCursor(12,0);
+    lcd.print("C");
+    
+      while(1) {
+          // Checks for controller input          
+          temp_input3 = getControllerInput();
+        if (temp_input3 == K_CONTINUE) {
+          lcd.clear();
+          do{
+            temp_input1 = getControllerInput();
+          } while(temp_input1 == -1);
+            
+          do{
+            temp_input2 = getControllerInput();
+          } while(temp_input2 == -1);
+           
+          if(temp_input1 >= 0 && temp_input1 <= 9 
+           && temp_input2 >= 0 && temp_input2 <= 9){
+              resultTemp = temp_input1 * 10 + temp_input2;
+            lcd.setCursor(3,0);
+            lcd.print("Temp:");
+            lcd.setCursor(10,0);
+            lcd.print(resultTemp);
+            lcd.setCursor(12,0);
+            lcd.print("C");
+          }
+        }
+      
+        if (temp_input3 == K_FUNCSTOP) {
+            return;
+        }
     }
 }
 

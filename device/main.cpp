@@ -22,6 +22,7 @@
 // Variables
 char controller_input[20];
 bool lightsON = false;
+uint8_t pin_code = 9999;  // TODO
 
 
 // IR Controller Setup
@@ -66,6 +67,8 @@ void setup() {
   
   	// Welcome message
     welcome();
+  	// Security System
+  	securitySystem();
 }
 
 void loop() {
@@ -322,6 +325,62 @@ uint8_t decodeInput(uint16_t input) {
       	default:
       		return -1;
     }
+}
+
+// Security system
+void securitySystem() {
+  	uint8_t input_cmd = -1;
+  
+  	// Display data
+	lcd.clear();
+  	lcd.setCursor(2,0);
+  	lcd.print("Door locked!");
+  	lcd.setCursor(1,1);
+  	lcd.print("Press any key.");
+  	
+    while (input_cmd == 1) {
+    	input_cmd = getControllerInput();
+    }
+  
+  	// Deactivate security system (i.e. enter pin)
+  	deativateSecuritySystem();
+}
+
+void deactivateSecuritySystem() {
+  	uint8_t pinNumIndex = 0;
+  	int8_t pinInput = -1;
+  	uint16_t pinCode = 0;
+  
+  	// Display data
+	lcd.clear();
+  	lcd.setCursor(3,0);
+  	lcd.print("Enter pin:");
+  	
+  	// Get pin code input
+  	while (pinNumIndex < 4) {
+      	pinInput = getControllerInput();
+        if (pinInput >= 0 && pinInput <= 9) {
+            switch (pinNumIndex) {
+				case 0:
+              		pinCode += pinInput * 1000;
+              		break;
+              	case 1:
+              		pinCode += pinInput * 100;
+              		break;
+              	case 2:
+              		pinCode += pinInput * 10;
+              		break;
+              	case 4:
+              		pinCode += pinInput;
+              		break;
+            }
+          	pinNumIndex++;
+        }
+    }
+}
+
+// Performs 1 pin code try
+bool pinCodeTry() {
 }
 
 // Sets Lights Color

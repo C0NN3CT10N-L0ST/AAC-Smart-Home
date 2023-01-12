@@ -45,9 +45,14 @@ class SerialController:
         data = self.controller.readline()
         data = data.decode().split('$')
         op_code = data[0]
-        cmd_data = data[1]
 
-        if op_code == op_code:
-            return cmd_data
+        # Error handling
+        try:
+            cmd_data = data[1]
+
+            if op_code == op_code:
+                return cmd_data
+        except IndexError:
+            return None
 
         return None

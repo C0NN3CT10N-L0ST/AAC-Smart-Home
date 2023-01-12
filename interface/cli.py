@@ -36,7 +36,7 @@ class CliInterface:
         \___ \| '_ ` _ \ / _` | '__| __| | |_| |/ _ \| '_ ` _ \ / _ \\
          ___) | | | | | | (_| | |  | |_  |  _  | (_) | | | | | |  __/
         |____/|_| |_| |_|\__,_|_|   \__| |_| |_|\___/|_| |_| |_|\___|
-                                                                    
+                                                             by GOATS
 
         """)
         print("Initializing Smart Home System...")
@@ -62,11 +62,11 @@ class CliInterface:
         cmd_type = cmd_data[0]
 
         # Ends program on 'exit' command
-        if cmd_type == "exit":
+        if cmd_type == "exit" or cmd_type == "quit":
             self.endProgram(controller)
             exit()
         elif cmd_type == "help":
-            help()
+            self.help()
         elif cmd_type == "info":
             self.info()
         elif cmd_type == "get":
@@ -85,6 +85,8 @@ class CliInterface:
                 print(f"Current Humidity Percentage: {getHumidity(controller):.2f}%")
             elif cmd_param1 == "lights":
                 print("Current lights state: {}".format("ON" if getLightsState(controller) else "OFF"))
+            elif cmd_param1 == "brightness":
+                print(f"Current brightness percentage: {getBrightness(controller)}%")
             else:
                 return False
         elif cmd_type == "set":

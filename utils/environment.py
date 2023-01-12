@@ -17,3 +17,9 @@ def setTemp(controller: SerialController, temp: int) -> bool:
 def getHumidity(controller: SerialController) -> float:
     controller.sendCommand('#P04')
     return float(controller.receiveCommand('#D04'))
+
+
+# Gets current environment brightness percentage
+def getBrightness(controller: SerialController) -> int:
+    controller.sendCommand("#P10")
+    return int(controller.receiveCommand("#D10"))

@@ -1,1 +1,1 @@
-from serialcontroller import SerialController
+from .serialcontroller import SerialController

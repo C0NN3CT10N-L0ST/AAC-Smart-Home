@@ -25,7 +25,7 @@ class SerialController:
             if os.name == 'posix':
                 self.port = '/dev/ttyUSB0'
 
-        self.controller = serial.Serial(self.device_port, self.baud_rate, self.timeout)
+        self.controller = serial.Serial(port=self.port, baudrate=self.baud_rate, timeout=self.timeout)
         sleep(3)
 
 
@@ -41,8 +41,8 @@ class SerialController:
 
 
     # Receives response to a command from the device
-    def receiveCommand(self, op_code: str):
-        data = data.readline()
+    def receiveCommand(self, op_code: str) -> str:
+        data = self.controller.readline()
         data = data.decode().split('$')
         op_code = data[0]
         cmd_data = data[1]

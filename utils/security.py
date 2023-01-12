@@ -1,12 +1,13 @@
 from controller import SerialController
+from utils.art import artPinLock
 
 
 # Executes security system which unlocks the door and the internal system
 def execSecuritySystem(controller: SerialController):
     print("Door is locked!")
     print("Press [ENTER] to unlock.")
-    input()
 
+    artPinLock()
     if not unlockSecuritySystem(controller):
         activateSecurityMeasures()
 
@@ -15,6 +16,8 @@ def execSecuritySystem(controller: SerialController):
 
     # Gets button input to unlock the door
     getDoorButtonInput(controller)
+
+    print("Door open! You're in.")
 
 
 # Deactivates Security System by entering the pin code
@@ -62,14 +65,16 @@ def getPinCodeInput():
 
 # Gets button input which gets door open
 def getDoorButtonInput(controller: SerialController):
-    controller.sendCommand("#P09")
     open = False
     while not open:
+        controller.sendCommand("#P09")
         cmd_output = controller.receiveCommand("#D09")
         try:
-            if int(cmd_output) == 1:
+            if int(cmd_output) == 0:
                 return
         except ValueError:
+            continue
+        except TypeError:
             continue
 
 

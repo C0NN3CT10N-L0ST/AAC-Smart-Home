@@ -4,12 +4,15 @@ from utils.security import execSecuritySystem, activateAlarmAndDangerLED
 from utils.environment import *
 from utils.lights import *
 from utils.help import help_commands
+import os
 
 
 class CliInterface:
     arduino = None
 
     def __init__(self, device_port = None):
+        # 'Clears' terminal on startup
+        self.clearTerminal()
         self.welcome()
         self.arduino = self.initializeController(device_port=device_port)
 
@@ -155,6 +158,11 @@ class CliInterface:
             print(cmd)
 
 
+    # 'Clear' terminal
+    def clearTerminal(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+
     def endProgram(self, controller: SerialController):
         print("Closing serial connection...")
         # Closes serial connection
@@ -162,6 +170,7 @@ class CliInterface:
         print("Serial connection closed!")
         print("Ending program...")
         sleep(3)
+        self.clearTerminal()
 
 
 if __name__ == '__main__':

@@ -1,11 +1,13 @@
 from controller import SerialController
 from utils.art import artPinLock
+from maskpass import askpass
 
 
 # Executes security system which unlocks the door and the internal system
 def execSecuritySystem(controller: SerialController):
     print("Door is locked!")
     print("Press [ENTER] to unlock.")
+    input()
 
     artPinLock()
     if not unlockSecuritySystem(controller):
@@ -28,7 +30,6 @@ def unlockSecuritySystem(controller: SerialController) -> bool:
         print("Tries left:", tries)
         print()
         tries -= 1
-        print("Enter pin: ", end='')
 
         pin_input = getPinCodeInput()
         while pin_input is None:
@@ -48,7 +49,7 @@ def unlockSecuritySystem(controller: SerialController) -> bool:
 
 # Gets and sanitizes pin input
 def getPinCodeInput():
-    pin_input = input()
+    pin_input = askpass("Enter pin: ")
 
     if len(pin_input) != 4:
         print("Pin must have 4 digits!")

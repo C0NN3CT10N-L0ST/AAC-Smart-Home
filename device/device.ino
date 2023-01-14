@@ -6,6 +6,9 @@
 #include <LiquidCrystal_I2C.h>
 #include <Adafruit_NeoPixel.h>
 #include <DHT.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <splash.h>
 
 /*
 	### AUTHORS ###
@@ -148,14 +151,16 @@ int buzzerSequence[] = {
 #define BUZZER_PIN 5
 #define SW1_PIN 2
 #define LIGHT_SENSOR_PIN A1
+#define FLAME_SENSOR_PIN 7
 #define PIN_CODE 9999
 
 // Variables
 char controller_input[20];
 char op_code_data[20];
 bool lightsON = false;
-int currentDoorButtonState;
+uint8_t currentDoorButtonState;
 uint8_t currentEnvironmentBrightness = 0;
+uint8_t currentFlameStatus;
 
 // IR Controller Setup
 enum controller_keys {
@@ -193,6 +198,7 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);                      // BUZZER setup
   pinMode(SW1_PIN, INPUT);                          // SW1 setup
   pinMode(LIGHT_SENSOR_PIN, INPUT);                 // Light (photoresistor) sensor setup
+  pinMode(FLAME_SENSOR_PIN, INPUT);                 // Flame sensor setup
   dht.begin();                                      // Starts DHT Sensor
 }
 
@@ -200,6 +206,7 @@ void loop() {
   receiveOpCode();
   getDoorButtonState();
   getCurrentEnvironmentBrightness();
+  getCurrentFlameState();
 }
 
 /* FUNCTIONS */
@@ -253,6 +260,11 @@ void getCurrentEnvironmentBrightness() {
   uint16_t sensor_value = analogRead(LIGHT_SENSOR_PIN);
   // Maps sensor value to percentage (0-100)
   currentEnvironmentBrightness = map(sensor_value, 0, 1023, 0, 100);
+}
+
+// Gets the current flame state
+void getCurrentFlameState() {
+  uint8_t currentFlameStatus = digitalRead(FLAME_SENSOR_PIN);
 }
 
 // Fires alarm
@@ -343,6 +355,10 @@ void receiveOpCode() {
       // Returns current light brightness percentage
       Serial.print("#D10$");
       Serial.println(currentEnvironmentBrightness);
+    } else if (strcmp(op_code, "P11") == 0) {
+      // Returns current flate state
+      Serial.print("#D11$");
+      Serial.println(currentFlameStatus);
     }
   }
 }

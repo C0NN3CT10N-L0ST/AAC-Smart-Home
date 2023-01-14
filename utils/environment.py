@@ -23,3 +23,14 @@ def getHumidity(controller: SerialController) -> float:
 def getBrightness(controller: SerialController) -> int:
     controller.sendCommand("#P10")
     return int(controller.receiveCommand("#D10"))
+
+
+# Gets current flame status
+def getFlameStatus(controller: SerialController) -> bool:
+    controller.sendCommand("#P11")
+    flame_status = controller.receiveCommand("#D11")
+    
+    if flame_status == 1:
+        return True
+
+    return False

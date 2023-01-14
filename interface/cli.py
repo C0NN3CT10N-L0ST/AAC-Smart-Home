@@ -90,6 +90,8 @@ class CliInterface:
                 print("Current lights state: {}".format("ON" if getLightsState(controller) else "OFF"))
             elif cmd_param1 == "brightness":
                 print(f"Current brightness percentage: {getBrightness(controller)}%")
+            elif cmd_param1 == "flames":
+                print("Current flame status: {}".format("Flames detected!" if getFlameStatus(controller) else "No flames"))
             else:
                 return False
         elif cmd_type == "set":

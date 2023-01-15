@@ -169,7 +169,7 @@ enum controller_keys {
 #define DHT_PIN 4
 #define DHT_TYPE DHT11
 #define BUZZER_PIN 5
-#define SW1_PIN 2
+#define DOOR_BUTTON_PIN 7
 #define LIGHT_SENSOR_PIN A1
 #define FLAME_SENSOR_PIN 8
 #define LIGHTS_R_PIN 9
@@ -199,7 +199,7 @@ void setup() {
   pinMode(LED1_PIN, OUTPUT);                        // LED1 (BLUE) setup
   pinMode(LED2_PIN, OUTPUT);                        // LED1 (BLUE) setup
   pinMode(BUZZER_PIN, OUTPUT);                      // BUZZER setup
-  pinMode(SW1_PIN, INPUT);                          // SW1 setup
+  pinMode(DOOR_BUTTON_PIN, INPUT);                  // Door Button setup
   pinMode(LIGHT_SENSOR_PIN, INPUT);                 // Light (photoresistor) sensor setup
   pinMode(FLAME_SENSOR_PIN, INPUT);                 // Flame sensor setup
   pinMode(LIGHTS_R_PIN, OUTPUT);                    // Lights RED setup
@@ -250,7 +250,7 @@ bool setLightsState(char input) {
 
 // Gets the current state of door button
 void getDoorButtonState() {
-  currentDoorButtonState = digitalRead(SW1_PIN);
+  currentDoorButtonState = digitalRead(DOOR_BUTTON_PIN);
 }
 
 // Gets the current percentage of environment light brightness

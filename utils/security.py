@@ -13,7 +13,7 @@ def execSecuritySystem(controller: SerialController):
     if not unlockSecuritySystem(controller):
         activateSecurityMeasures()
 
-    print("Press [BUTTON] (SW1) to open door!")
+    print("Press [BUTTON] to open door!")
     print()
 
     # Gets button input to unlock the door

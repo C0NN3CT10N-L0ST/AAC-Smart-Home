@@ -30,7 +30,7 @@ def getFlameStatus(controller: SerialController) -> bool:
     controller.sendCommand("#P11")
     flame_status = controller.receiveCommand("#D11")
     
-    if flame_status == 1:
+    if flame_status == 0:
         return True
 
     return False

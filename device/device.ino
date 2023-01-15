@@ -1,14 +1,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <IRremote.h>
+#include <IRremote.hpp>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-#include <Adafruit_NeoPixel.h>
 #include <DHT.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <splash.h>
 
 /*
 	### AUTHORS ###
@@ -141,9 +136,6 @@ int buzzerSequence[] = {
 };
 
 // ARDUINO PINS
-#define IR_PIN 2
-#define NEOPIXEL_PIN 3
-#define NEOPIXEL_LED_COUNT 7
 #define LED1_PIN 13
 #define LED2_PIN 12
 #define DHT_PIN 4
@@ -151,16 +143,20 @@ int buzzerSequence[] = {
 #define BUZZER_PIN 5
 #define SW1_PIN 2
 #define LIGHT_SENSOR_PIN A1
-#define FLAME_SENSOR_PIN 7
+#define FLAME_SENSOR_PIN 8
+#define LIGHTS_R_PIN 9
+#define LIGHTS_G_PIN 10
+#define LIGHTS_B_PIN 11
+#define IR_PIN 6
 #define PIN_CODE 9999
 
 // Variables
 char controller_input[20];
 char op_code_data[20];
-bool lightsON = false;
+bool lightsState = false;
 uint8_t currentDoorButtonState;
 uint8_t currentEnvironmentBrightness = 0;
-uint8_t currentFlameStatus;
+uint16_t currentFlameStatus;
 
 // IR Controller Setup
 enum controller_keys {
@@ -199,6 +195,9 @@ void setup() {
   pinMode(SW1_PIN, INPUT);                          // SW1 setup
   pinMode(LIGHT_SENSOR_PIN, INPUT);                 // Light (photoresistor) sensor setup
   pinMode(FLAME_SENSOR_PIN, INPUT);                 // Flame sensor setup
+  pinMode(LIGHTS_R_PIN, OUTPUT);                    // Lights RED setup
+  pinMode(LIGHTS_G_PIN, OUTPUT);                    // Lights GREEN setup
+  pinMode(LIGHTS_B_PIN, OUTPUT);                    // Lights BLUE setup
   dht.begin();                                      // Starts DHT Sensor
 }
 
@@ -206,13 +205,20 @@ void loop() {
   receiveOpCode();
   getDoorButtonState();
   getCurrentEnvironmentBrightness();
-  getCurrentFlameState();
+  getCurrentFlameStatus();
+
+  // DEBUG
+  /*if (IrReceiver.decode()) {
+    // IrReceiver.printIRResultShort(&Serial);
+    Serial.println(IrReceiver.decodedIRData.command, HEX);
+    IrReceiver.resume();
+  }*/
 }
 
 /* FUNCTIONS */
 void switchLights() {
-  lightsON = !lightsON;
-  if (lightsON) {
+  lightsState = !lightsState;
+  if (lightsState) {
     setLightsRGBColor(254, 254, 254);
   } else {
     setLightsRGBColor(0, 0, 0);
@@ -231,19 +237,19 @@ float getHumidity() {
 
 // Gets current lights state
 bool getLightsState() {
-  return lightsON;
+  return lightsState;
 }
 
 // Sets curent lights state
 bool setLightsState(char input) {
   if (input == '1') {
-    lightsON = true;
-    setLightsRGBColor(254,254,254);
+    lightsState = true;
+    setLightsRGBColor(255,255,255);
     return true;
   }
 
   if (input == '0') {
-    lightsON = false;
+    lightsState = false;
     setLightsRGBColor(0,0,0);
     return true;
   }
@@ -263,8 +269,14 @@ void getCurrentEnvironmentBrightness() {
 }
 
 // Gets the current flame state
-void getCurrentFlameState() {
-  uint8_t currentFlameStatus = digitalRead(FLAME_SENSOR_PIN);
+void getCurrentFlameStatus() {
+  currentFlameStatus = !digitalRead(FLAME_SENSOR_PIN);
+  if (currentFlameStatus != 0) {
+    /*analogWrite(TEST_PIN, 50);
+    delay(500);
+    analogWrite(TEST_PIN, 0);*/
+    // TODO
+  }
 }
 
 // Fires alarm
@@ -296,10 +308,9 @@ void triggerSecurityMeasures() {
 
 // Sets Lights Color
 void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
-  // TODO
-  /*analogWrite(COLORLED_R, red);
-  analogWrite(COLORLED_G, green);
-  analogWrite(COLORLED_B, blue);*/
+  analogWrite(LIGHTS_R_PIN, red);
+  analogWrite(LIGHTS_G_PIN, green);
+  analogWrite(LIGHTS_B_PIN, blue);
 }
 
 void receiveOpCode() {

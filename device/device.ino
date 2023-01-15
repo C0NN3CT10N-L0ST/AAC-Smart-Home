@@ -135,6 +135,34 @@ int buzzerSequence[] = {
   NOTE_A5, NOTE_AS5, NOTE_A5, NOTE_AS5
 };
 
+// IR Controller Setup
+enum controller_keys {
+  K_ON,
+  K_OFF,
+  K_BRIGHTNESS_UP,
+  K_BRIGHTNESS_DOWN,
+  K_WHITE,
+  K_RED_1,
+  K_RED_2,
+  K_RED_3,
+  K_RED_4,
+  K_RED_5,
+  K_GREEN_1,
+  K_GREEN_2,
+  K_GREEN_3,
+  K_GREEN_4,
+  K_GREEN_5,
+  K_BLUE_1,
+  K_BLUE_2,
+  K_BLUE_3,
+  K_BLUE_4,
+  K_BLUE_5,
+  K_FLASH,
+  K_STROBE,
+  K_FADE,
+  K_SMOOTH
+};
+
 // ARDUINO PINS
 #define LED1_PIN 13
 #define LED2_PIN 12
@@ -157,31 +185,10 @@ bool lightsState = false;
 uint8_t currentDoorButtonState;
 uint8_t currentEnvironmentBrightness = 0;
 uint16_t currentFlameStatus;
+uint8_t currentLightControlMode = 0;  // 0 - Program | 1 - Controller
+uint8_t currentLightAnimation = 0;  // 0 - No animation | 1 - Flash | 2 - Strobe | 3 - Fade | 4 - Smooth
+bool staticColor = 0;  // Stores if the current light mode is static (i.e. not an animation) or not
 
-// IR Controller Setup
-enum controller_keys {
-  K_0,
-  K_1,
-  K_2,
-  K_3,
-  K_4,
-  K_5,
-  K_6,
-  K_7,
-  K_8,
-  K_9,
-  K_ONOFF,
-  K_VOLUP,
-  K_VOLDOWN,
-  K_FUNCSTOP,
-  K_LEFT,
-  K_RIGHT,
-  K_CONTINUE,
-  K_ARROWUP,
-  K_ARROWDOWN,
-  K_EQ,
-  K_STREPT
-};
 
 // DHT Sensor Setup
 DHT dht(DHT_PIN, DHT_TYPE);
@@ -206,25 +213,10 @@ void loop() {
   getDoorButtonState();
   getCurrentEnvironmentBrightness();
   getCurrentFlameStatus();
-
-  // DEBUG
-  /*if (IrReceiver.decode()) {
-    // IrReceiver.printIRResultShort(&Serial);
-    Serial.println(IrReceiver.decodedIRData.command, HEX);
-    IrReceiver.resume();
-  }*/
+  executeColorCommand();
 }
 
 /* FUNCTIONS */
-void switchLights() {
-  lightsState = !lightsState;
-  if (lightsState) {
-    setLightsRGBColor(254, 254, 254);
-  } else {
-    setLightsRGBColor(0, 0, 0);
-  }
-}
-
 // Gets current temperature in Celsius
 float getTemp() {
   return dht.readTemperature();
@@ -306,6 +298,16 @@ void triggerSecurityMeasures() {
   // TODO
 }
 
+// Switches lights ON/OFF
+void switchLights() {
+  lightsState = !lightsState;
+  if (lightsState) {
+    setLightsRGBColor(255, 255, 255);
+  } else {
+    setLightsRGBColor(0, 0, 0);
+  }
+}
+
 // Sets Lights Color
 void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
   analogWrite(LIGHTS_R_PIN, red);
@@ -313,6 +315,193 @@ void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
   analogWrite(LIGHTS_B_PIN, blue);
 }
 
+// Gets lights input from IR Controller
+int8_t getDecodedControllerInput() {
+  int8_t cmd = -1;
+  if (IrReceiver.decode()) {
+    cmd = decodeControllerInput(IrReceiver.decodedIRData.command);
+    IrReceiver.resume();
+  }
+  return cmd != -1 ? cmd : -1;
+}
+
+// Decodes Controller Input, returns -1 on invalid input
+int8_t decodeControllerInput(uint16_t input) {
+  switch (input) {
+    case 0x7:
+      return K_ON;
+    case 0x6:
+      return K_OFF;
+    case 0x5:
+      return K_BRIGHTNESS_UP;
+    case 0x4:
+      return K_BRIGHTNESS_DOWN;
+    case 0xB:
+      return K_WHITE;
+    case 0x9:
+      return K_RED_1; 
+    case 0xD:
+      return K_RED_2;
+    case 0x15:
+      return K_RED_3;
+    case 0x19:
+      return K_RED_4;
+    case 0x11:
+      return K_RED_5;
+    case 0x8:
+      return K_GREEN_1;
+    case 0xC:
+      return K_GREEN_2;
+    case 0x14:
+      return K_GREEN_3;
+    case 0x18:
+      return K_GREEN_4;
+    case 0x10:
+      return K_GREEN_5;
+    case 0xA:
+      return K_BLUE_1;
+    case 0xE:
+      return K_BLUE_2;
+    case 0x16:
+      return K_BLUE_3;
+    case 0x1A:
+      return K_BLUE_4;
+    case 0x12:
+      return K_BLUE_5;
+    case 0xF:
+      return K_FLASH;
+    case 0x17:
+      return K_STROBE;
+    case 0x1B:
+      return K_FADE;
+    case 0x13:
+      return K_SMOOTH;
+    default:
+      return -1;
+  }
+}
+
+// Receives color input (controller) and executes its desired functionality
+void executeColorCommand() {
+  int8_t cmd = getDecodedControllerInput();
+
+  if (cmd != -1 && currentLightControlMode == 1) {
+    switch (cmd) {
+      case K_ON:
+        if (!lightsState) {
+          setLightsRGBColor(255,255,255);
+          lightsState = true;
+        }
+        break;
+      case K_OFF:
+        setLightsRGBColor(0,0,0);
+        lightsState = false;
+        break;
+      case K_BRIGHTNESS_UP:
+        // TODO
+        break;
+      case K_BRIGHTNESS_DOWN:
+        // TODO
+        break;
+      case K_WHITE:
+        if (lightsState) {
+          setLightsRGBColor(255,255,255);
+        }
+        break;
+      case K_RED_1:
+        if (lightsState) {
+          setLightsRGBColor(255,0,0);
+        }
+        break;
+      case K_RED_2:
+        if (lightsState) {
+          setLightsRGBColor(255,10,0);
+        }
+        break;
+      case K_RED_3:
+        if (lightsState) {
+          setLightsRGBColor(255,50,0);
+        }
+        break;
+      case K_RED_4:
+        if (lightsState) {
+          setLightsRGBColor(255,120,0);
+        }
+        break;
+      case K_RED_5:
+        if (lightsState) {
+          setLightsRGBColor(255,255,0);
+        }
+        break;
+      case K_GREEN_1:
+        if (lightsState) {
+          setLightsRGBColor(0,255,0);
+        }
+        break;
+      case K_GREEN_2:
+        if (lightsState) {
+          setLightsRGBColor(0,255,0);
+        }
+        break;
+      case K_GREEN_3:
+        if (lightsState) {
+          setLightsRGBColor(0,255,100);
+        }
+        break;
+      case K_GREEN_4:
+        if (lightsState) {
+          setLightsRGBColor(0,255,120);
+        }
+        break;
+      case K_GREEN_5:
+        if (lightsState) {
+          setLightsRGBColor(0,255,255);
+        }
+        break;
+      case K_BLUE_1:
+        if (lightsState) {
+          setLightsRGBColor(0,0,255);
+        }
+        break;
+      case K_BLUE_2:
+        if (lightsState) {
+          setLightsRGBColor(10,0,255);
+        }
+        break;
+      case K_BLUE_3:
+        if (lightsState) {
+          setLightsRGBColor(50,0,255);
+        }
+        break;
+      case K_BLUE_4:
+        if (lightsState) {
+          setLightsRGBColor(120,0,255);
+        }
+        break;
+      case K_BLUE_5:
+        if (lightsState) {
+          setLightsRGBColor(255,0,255);
+        }
+        break;
+      case K_FLASH:
+        // TODO
+        break;
+      case K_STROBE:
+        // TODO
+        break;
+      case K_FADE:
+        // TODO
+        break;
+      case K_SMOOTH:
+        // TODO
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// TODO
 void receiveOpCode() {
   if (Serial.available()) {
     Serial.readBytesUntil('\n', op_code_data, 20);
@@ -321,13 +510,11 @@ void receiveOpCode() {
     getOpCode(op_code_data, op_code);
     getData(op_code_data, data);
 
-    Serial.print(data);
-
     if (strcmp(op_code, "P02") == 0) {
       // Returns whether the given pin code is correct
-      int pin_input = atoi(data);
+      int pinInput = atoi(data);
       Serial.print("#D02$");
-      if (pin_input == PIN_CODE) {
+      if (pinInput == PIN_CODE) {
         Serial.println("1");
       } else {
         Serial.println("0");
@@ -357,19 +544,32 @@ void receiveOpCode() {
       Serial.println("#D07$1");
       activateAlarm();
     } else if (strcmp(op_code, "P08") == 0) {
-      // TODO
-    } else if (strcmp(op_code, "P09") == 0) {
       // Returns current door button state
-      Serial.print("#D09$");
+      Serial.print("#D08$");
       Serial.println(currentDoorButtonState);
-    } else if (strcmp(op_code, "P10") == 0) {
+    } else if (strcmp(op_code, "P09") == 0) {
       // Returns current light brightness percentage
-      Serial.print("#D10$");
+      Serial.print("#D09$");
       Serial.println(currentEnvironmentBrightness);
-    } else if (strcmp(op_code, "P11") == 0) {
+    } else if (strcmp(op_code, "P10") == 0) {
       // Returns current flate state
-      Serial.print("#D11$");
+      Serial.print("#D10$");
       Serial.println(currentFlameStatus);
+    } else if (strcmp(op_code, "P11") == 0) {
+      // Returns the current light control mode
+      Serial.print("#D11$");
+      Serial.println(currentLightControlMode);
+    } else if (strcmp(op_code, "P12") == 0) {
+      // Returns whether current light mode was successfully changed
+      if (data[0] == '1') {
+        currentLightControlMode = 1;
+        Serial.println("#D12$1");
+      } else if (data[0] == '0') {
+        currentLightControlMode = 0;
+        Serial.println("#D12$1");
+      } else {
+        Serial.println("#D12$0");
+      }
     }
   }
 }

@@ -92,6 +92,8 @@ class CliInterface:
                 print(f"Current brightness percentage: {getBrightness(controller)}%")
             elif cmd_param1 == "flames":
                 print("Current flame status: {}".format("Flames detected!" if getFlameStatus(controller) else "No flames"))
+            elif cmd_param1 == "lightcontrol":
+                print(f"Current light control mode: {getLightControlMode(controller)}")
             else:
                 return False
         elif cmd_type == "set":
@@ -105,6 +107,11 @@ class CliInterface:
                 return False
 
             if cmd_param1 == "lights":
+                if getLightControlMode(controller) == "Remote":
+                    print("Invalid action, current light control mode is set to 'remote'! Change current light control mode to 'program' in order to use this command.")
+                    print()
+                    return True
+                    
                 if cmd_param2 == "on" or cmd_param2 == "off":
                     success = setLightsState(controller, True if cmd_param2 == "on" else False)
                     if success:
@@ -122,9 +129,16 @@ class CliInterface:
                 except ValueError:
                     print("Temperature value must be an integer!\n")
                     return True
+            elif cmd_param1 == "lightcontrol":
+                if cmd_param2 == "program" or cmd_param2 == "remote":
+                    success = setLightControlMode(controller, cmd_param2)
+                    if success:
+                        print(f"Light control mode successfully set to {cmd_param2}!")
+                    else:
+                        print("Error occurred while trying to set light control mode! Try again.")
             else:
                 return False
-        elif cmd_type == "activate":
+        elif cmd_type == "trigger":
             cmd_param1 = None
             try:
                 # Tries to get first command parameter

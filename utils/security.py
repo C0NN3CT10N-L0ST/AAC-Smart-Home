@@ -68,8 +68,8 @@ def getPinCodeInput():
 def getDoorButtonInput(controller: SerialController):
     open = False
     while not open:
-        controller.sendCommand("#P09")
-        cmd_output = controller.receiveCommand("#D09")
+        controller.sendCommand("#P08")
+        cmd_output = controller.receiveCommand("#D08")
         try:
             if int(cmd_output) == 0:
                 return

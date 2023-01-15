@@ -108,16 +108,38 @@ class CliInterface:
 
             if cmd_param1 == "lights":
                 if getLightControlMode(controller) == "Remote":
-                    print("Invalid action, current light control mode is set to 'remote'! Change current light control mode to 'program' in order to use this command.")
+                    print("Invalid action! Current light control mode is: Remote")
                     print()
                     return True
                     
+                # Sets lights ON/OFF
                 if cmd_param2 == "on" or cmd_param2 == "off":
                     success = setLightsState(controller, True if cmd_param2 == "on" else False)
                     if success:
                         print("Lights state successfully set!") 
+                        print()
+                        return True
                     else:
                         print("Error occurred while trying to set lights state! Try again.")
+
+                # Sets lights color
+                if cmd_param2 == "white" or cmd_param2 == "red" or cmd_param2 == "green" or cmd_param2 == "blue":
+                    lights_on = getLightsState(controller)
+                    if not lights_on:
+                        print("Invalid action! Current lights state is: OFF")
+                        print()
+                        return True
+
+                    success = setLightsColor(controller, cmd_param2)
+                    if success:
+                        print(f"Lights color successfully set to {cmd_param2}!")
+                        print()
+                        return True
+                    else:
+                        print("Error occurred while trying to set lights color! Try again.")
+                        print()
+                        return True
+                
                 else:
                     return False
             elif cmd_param1 == "temperature":

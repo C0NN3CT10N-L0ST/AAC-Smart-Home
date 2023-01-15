@@ -570,6 +570,26 @@ void receiveOpCode() {
       } else {
         Serial.println("#D12$0");
       }
+    } else if (strcmp(op_code, "P13") == 0) {
+      if (data[0] == 'R') {
+        lightsState = true;
+        setLightsRGBColor(255,0,0);
+        Serial.println("#D13$1");
+      } else if (data[0] == 'G') {
+        lightsState = true;
+        setLightsRGBColor(0,255,0);
+        Serial.println("#D13$1");
+      } else if (data[0] == 'B') {
+        lightsState = true;
+        setLightsRGBColor(0,0,255);
+        Serial.println("#D13$1");
+      } else if (data[0] == 'W') {
+        lightsState = true;
+        setLightsRGBColor(255,255,255);
+        Serial.println("#D13$1");
+      } else {
+        Serial.println("#D13$0");
+      }
     }
   }
 }

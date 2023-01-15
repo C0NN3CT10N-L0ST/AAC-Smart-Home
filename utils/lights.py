@@ -26,5 +26,22 @@ def getLightControlMode(controller: SerialController) -> str:
 def setLightControlMode(controller: SerialController, value: str) -> bool:
     payload = '#P12$1' if value.lower() == 'remote' else '#P12$0'
     controller.sendCommand(payload)
-    data = int(controller.receiveCommand('#D11'))
+    data = int(controller.receiveCommand('#D12'))
+    return True if data == 1 else False
+
+
+# Sets current lights color
+def setLightsColor(controller: SerialController, color: str) -> bool:
+    payload = '#P13'
+    if color == 'red':
+        payload = '#P13$R'
+    elif color == 'green':
+        payload =  '#P13$G'
+    elif color == 'blue':
+        payload =  '#P13$B'
+    else:
+        payload = '#P13$W'
+    
+    controller.sendCommand(payload)
+    data = int(controller.receiveCommand('#D13'))
     return True if data == 1 else False

@@ -142,15 +142,7 @@ class CliInterface:
                 
                 else:
                     return False
-            elif cmd_param1 == "temperature":
-                try: 
-                    temp = int(cmd_param2)
-                    if not temp in range(15,31):
-                        print("Temperature must be a value between 15 and 30!\n")
-                        return True
-                except ValueError:
-                    print("Temperature value must be an integer!\n")
-                    return True
+
             elif cmd_param1 == "lightcontrol":
                 if cmd_param2 == "program" or cmd_param2 == "remote":
                     success = setLightControlMode(controller, cmd_param2)
@@ -168,7 +160,7 @@ class CliInterface:
             except IndexError:
                 return False
 
-            if cmd_param1 == "alarm":
+            if cmd_param1 == "securityalarm":
                 success = activateAlarmAndDangerLED(controller)
                 if success:
                     print("Alarm successfully activated!")

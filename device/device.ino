@@ -176,6 +176,7 @@ enum controller_keys {
 #define LIGHTS_G_PIN 10
 #define LIGHTS_B_PIN 11
 #define IR_PIN 6
+#define SW2_PIN 3
 #define PIN_CODE 9999
 
 // Variables
@@ -183,11 +184,12 @@ char controller_input[20];
 char op_code_data[20];
 bool lightsState = false;
 uint8_t currentDoorButtonState;
+uint8_t currentAlarmStopButtonState = 0;      // 0 - OFF | 1 - ON
 uint8_t currentEnvironmentBrightness = 0;
 uint16_t currentFlameStatus;
-uint8_t currentLightControlMode = 0;  // 0 - Program | 1 - Controller
-uint8_t currentLightAnimation = 0;  // 0 - No animation | 1 - Flash | 2 - Strobe | 3 - Fade | 4 - Smooth
-bool staticColor = 0;  // Stores if the current light mode is static (i.e. not an animation) or not
+uint8_t currentLightControlMode = 0;          // 0 - Program | 1 - Controller
+uint8_t currentLightAnimation = 0;            // 0 - No animation | 1 - Flash | 2 - Strobe | 3 - Fade | 4 - Smooth
+bool staticColor = 0;                         // Stores if the current light mode is static (i.e. not an animation) or not
 
 
 // DHT Sensor Setup
@@ -205,6 +207,7 @@ void setup() {
   pinMode(LIGHTS_R_PIN, OUTPUT);                    // Lights RED setup
   pinMode(LIGHTS_G_PIN, OUTPUT);                    // Lights GREEN setup
   pinMode(LIGHTS_B_PIN, OUTPUT);                    // Lights BLUE setup
+  pinMode(SW2_PIN, INPUT);                          // SW2 setup
   dht.begin();                                      // Starts DHT Sensor
 }
 
@@ -272,10 +275,14 @@ void getCurrentFlameStatus() {
 }
 
 // Fires alarm
-void activateAlarm() {
-  for (int current_note = 0; current_note < 112; current_note++) {
+void activateSecurityAlarm() {
+  int note_duration = 750 / 4;
 
-    int note_duration = 750 / 4;
+  for (int current_note = 0; current_note < 112; current_note++) {
+    getAlarmSTOPInput();
+    // Stops alarm upon pressing SW2 button
+    if (!currentAlarmStopButtonState) break;
+
     tone(BUZZER_PIN, buzzerSequence[current_note], note_duration);
 
     // Activates red LED
@@ -501,6 +508,11 @@ void executeColorCommand() {
   }
 }
 
+// Updates current Alarm STOP button state
+void getAlarmSTOPInput() {
+  currentAlarmStopButtonState = digitalRead(SW2_PIN);
+}
+
 // TODO
 void receiveOpCode() {
   if (Serial.available()) {
@@ -541,8 +553,8 @@ void receiveOpCode() {
       }
     } else if (strcmp(op_code, "P07") == 0) {
       // Returns whether 'P07' was successful
+      activateSecurityAlarm();
       Serial.println("#D07$1");
-      activateAlarm();
     } else if (strcmp(op_code, "P08") == 0) {
       // Returns current door button state
       Serial.print("#D08$");

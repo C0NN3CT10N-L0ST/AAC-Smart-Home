@@ -287,9 +287,13 @@ void activateSecurityAlarm() {
 
     // Activates red LED
     if ((current_note + 10) % 10 == 0) {
-      digitalWrite(LED2_PIN, HIGH);      
+      digitalWrite(LED2_PIN, HIGH);
+      setLightsRGBColor(255,0,0);
+      lightsState = true;
     } else if (current_note > 1 && ((current_note + 10) % 5 == 0)) {
       digitalWrite(LED2_PIN, LOW);
+      setLightsRGBColor(0,0,0);
+      lightsState = false;
     }
 
     int idle = note_duration * 1.30;
@@ -298,6 +302,8 @@ void activateSecurityAlarm() {
     noTone(BUZZER_PIN);
   }
   digitalWrite(LED2_PIN, LOW);
+  setLightsRGBColor(0,0,0);
+  lightsState = false;
 }
 
 // Triggers Security Measures
@@ -553,8 +559,8 @@ void receiveOpCode() {
       }
     } else if (strcmp(op_code, "P07") == 0) {
       // Returns whether 'P07' was successful
-      activateSecurityAlarm();
       Serial.println("#D07$1");
+      activateSecurityAlarm();
     } else if (strcmp(op_code, "P08") == 0) {
       // Returns current door button state
       Serial.print("#D08$");

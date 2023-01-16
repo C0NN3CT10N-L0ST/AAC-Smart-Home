@@ -98,7 +98,5 @@ def activateSecurityMeasures():
 # Fires alarm
 def activateAlarmAndDangerLED(controller: SerialController):
     controller.sendCommand('#P07')
-    data = controller.receiveCommand('#D07')
-    print(data)
-    data = int(data)
+    data = int(controller.receiveCommand('#D07'))
     return True if data else False

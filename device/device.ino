@@ -180,7 +180,6 @@ enum controller_keys {
 #define PIN_CODE 9999
 
 // Variables
-char controller_input[20];
 char op_code_data[20];
 bool lightsState = false;
 uint8_t currentDoorButtonState;
@@ -268,7 +267,7 @@ void getCurrentFlameStatus() {
   currentFlameStatus = digitalRead(FLAME_SENSOR_PIN);
 }
 
-// Fires alarm
+// Triggers security alarm
 void activateSecurityAlarm() {
   int note_duration = 750 / 4;
 
@@ -299,6 +298,27 @@ void activateSecurityAlarm() {
   setLightsRGBColor(0,0,0);
   lightsState = false;
 }
+
+// Triggers fire alarm
+void activateFireAlarm() {
+  for (uint8_t i = 0; i < 255; i++) {
+    getAlarmSTOPInput();
+    // Stops alarm upon pressing SW2 button
+    if (!currentAlarmStopButtonState) break;
+
+    // Activates RED LED and RGB LED (in yellow)
+    digitalWrite(LED2_PIN, HIGH);
+    setLightsRGBColor(255,255,0);
+    lightsState = true;
+    delay(2000);
+
+    // Deactivate LEDs
+    digitalWrite(LED2_PIN, LOW);
+    setLightsRGBColor(0,0,0);
+    lightsState = false;
+    delay(1200);
+  }
+} 
 
 // Triggers Security Measures
 void triggerSecurityMeasures() {
@@ -602,6 +622,9 @@ void receiveOpCode() {
       } else {
         Serial.println("#D13$0");
       }
+    } else if (strcmp(op_code, "P14") == 0) {
+        Serial.println("#D14$1");
+        activateFireAlarm();      
     }
   }
 }

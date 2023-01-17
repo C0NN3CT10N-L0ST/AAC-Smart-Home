@@ -1,6 +1,6 @@
 from controller import SerialController
 from time import sleep
-from utils.security import execSecuritySystem, activateAlarmAndDangerLED
+from utils.security import execSecuritySystem, activateSecurityAlarmAndDangerLED, activateFireAlarm
 from utils.environment import *
 from utils.lights import *
 from utils.help import help_commands
@@ -161,11 +161,19 @@ class CliInterface:
                 return False
 
             if cmd_param1 == "securityalarm":
-                success = activateAlarmAndDangerLED(controller)
+                success = activateSecurityAlarmAndDangerLED(controller)
                 if success:
                     print("Alarm successfully activated!")
                 else:
                     print("Failed to activate alarm! Try again.")
+                return True
+            elif cmd_param1 == "firealarm":
+                success = activateFireAlarm(controller)
+                if success:
+                    print("Alarm successfully activated!")
+                else:
+                    print("Failed to activate alarm! Try again.")
+                return True
             else:
                 return False
         else:

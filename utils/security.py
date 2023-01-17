@@ -84,19 +84,23 @@ def checkPinCode(controller: SerialController, pinCode: int) -> bool:
     controller.sendCommand(f"#P02${pinCode}")
     pin_code = controller.receiveCommand("#D02")
     pin_code = int(pin_code)
-
-    if pin_code == 1:
-        return True
-    return False
+    return True if pin_code == 1 else False
 
 
 # Activates Security Measures (i.e. fires alarm, etc)
 def activateSecurityMeasures():
-    activateAlarmAndDangerLED()
+    activateSecurityAlarmAndDangerLED()
 
 
-# Fires alarm
-def activateAlarmAndDangerLED(controller: SerialController):
+# Fires security alarm
+def activateSecurityAlarmAndDangerLED(controller: SerialController):
     controller.sendCommand('#P07')
     data = int(controller.receiveCommand('#D07'))
+    return True if data else False
+
+
+# Triggers fire alarm
+def activateFireAlarm(controller: SerialController):
+    controller.sendCommand('#P14')
+    data = int(controller.receiveCommand('#D14'))
     return True if data else False

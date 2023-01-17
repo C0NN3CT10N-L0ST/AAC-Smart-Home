@@ -4,6 +4,7 @@ from time import sleep
 
 
 class SerialController:
+    controller = None
     # Serial object
     port = None
     # Baud rate
@@ -25,7 +26,12 @@ class SerialController:
             if os.name == 'posix':
                 self.port = '/dev/ttyUSB0'
 
-        self.controller = serial.Serial(port=self.port, baudrate=self.baud_rate, timeout=self.timeout)
+        try:
+            self.controller = serial.Serial(port=self.port, baudrate=self.baud_rate, timeout=self.timeout)
+        except serial.SerialException:
+            print("Could not connect to the specified device! Try to pass the device port as a program argument and make sure the port has RW permissions.")
+            exit()
+
         sleep(3)
 
 

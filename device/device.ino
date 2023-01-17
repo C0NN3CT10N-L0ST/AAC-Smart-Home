@@ -265,13 +265,13 @@ void getCurrentEnvironmentBrightness() {
 
 // Gets the current flame state
 void getCurrentFlameStatus() {
-  currentFlameStatus = !digitalRead(FLAME_SENSOR_PIN);
-  if (currentFlameStatus != 0) {
-    /*analogWrite(TEST_PIN, 50);
+  currentFlameStatus = digitalRead(FLAME_SENSOR_PIN);
+  /*if (currentFlameStatus != 0) {
+    analogWrite(TEST_PIN, 50);
     delay(500);
-    analogWrite(TEST_PIN, 0);*/
+    analogWrite(TEST_PIN, 0);
     // TODO
-  }
+  }*/
 }
 
 // Fires alarm

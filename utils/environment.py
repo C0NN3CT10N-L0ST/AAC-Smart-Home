@@ -28,9 +28,9 @@ def getBrightness(controller: SerialController) -> int:
 # Gets current flame status
 def getFlameStatus(controller: SerialController) -> bool:
     controller.sendCommand("#P10")
-    flame_status = controller.receiveCommand("#D10")
+    flame_status = int(controller.receiveCommand("#D10"))
     
-    if flame_status == 0:
+    if flame_status == 1:
         return True
 
     return False

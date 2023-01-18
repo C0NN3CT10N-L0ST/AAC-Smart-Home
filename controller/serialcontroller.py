@@ -29,25 +29,24 @@ class SerialController:
         try:
             self.controller = serial.Serial(port=self.port, baudrate=self.baud_rate, timeout=self.timeout)
         except serial.SerialException:
-            print("Could not connect to the specified device! Try to pass the device port as a program argument and make sure the port has RW permissions.")
+            print("Could not connect to the specified device!\n"
+                  "Try to pass the device port as a program argument and make sure the port has RW permissions "
+                  "and that it isn't currently being used by any other application.")
             exit()
 
         sleep(3)
-
 
     # Close Serial Connection
     def close(self):
         self.controller.close()
 
-    
     # Sends a command to the device
-    def sendCommand(self, command: str):
+    def send_command(self, command: str):
         data = command + "\n"
         self.controller.write(data.encode())
 
-
     # Receives response to a command from the device
-    def receiveCommand(self, op_code: str) -> str:
+    def receive_command(self, op_code: str) -> str:
         data = self.controller.readline()
         data = data.decode().split('$')
         op_code = data[0]

@@ -3,34 +3,48 @@ from controller import SerialController
 
 # Gets current temperature in Celsius
 def getTemp(controller: SerialController) -> float:
-    controller.sendCommand('#P03')
-    return float(controller.receiveCommand('#D03'))
+    controller.send_command('#P03')
+    return float(controller.receive_command('#D03'))
 
 
 # Sets ideal temperature
 def setTemp(controller: SerialController, temp: int) -> bool:
-    controller.sendCommand(f"#P08${temp}")
+    controller.send_command(f"#P08${temp}")
     return
 
 
 # Gets current humidity percentage
 def getHumidity(controller: SerialController) -> float:
-    controller.sendCommand('#P04')
-    return float(controller.receiveCommand('#D04'))
+    controller.send_command('#P04')
+    return float(controller.receive_command('#D04'))
 
 
 # Gets current environment brightness percentage
 def getBrightness(controller: SerialController) -> int:
-    controller.sendCommand("#P09")
-    return int(controller.receiveCommand("#D09"))
+    controller.send_command("#P09")
+    return int(controller.receive_command("#D09"))
 
 
 # Gets current flame status
 def getFlameStatus(controller: SerialController) -> bool:
-    controller.sendCommand("#P10")
-    flame_status = int(controller.receiveCommand("#D10"))
+    controller.send_command("#P10")
+    flame_status = int(controller.receive_command("#D10"))
     
     if flame_status == 1:
         return True
 
     return False
+
+
+# Gets current brightness level
+def get_brightness_level(controller: SerialController) -> str:
+    controller.send_command('#P17')
+    return controller.receive_command('#D17')
+
+
+# Sets current brightness level
+def set_brightness_level(controller: SerialController, value: int) -> bool:
+    payload = f'#P18${value}'
+    controller.send_command(payload)
+    data = int(controller.receive_command('#D18'))
+    return True if data == 1 else False

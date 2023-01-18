@@ -1,62 +1,44 @@
-from controller import SerialController
+import os
 from time import sleep
-from utils.security import execSecuritySystem, activateSecurityAlarmAndDangerLED, activateFireAlarm
+from utils.security import exec_security_system, activate_security_alarm_and_danger_led, activate_fire_alarm
 from utils.environment import *
 from utils.lights import *
 from utils.help import help_commands
-import os
+from utils.ascii import ascii_welcome
 
 
 class CliInterface:
     arduino = None
 
-    def __init__(self, device_port = None):
+    def __init__(self, device_port=None):
         # 'Clears' terminal on startup
-        self.clearTerminal()
-        self.welcome()
-        self.arduino = self.initializeController(device_port=device_port)
-
+        self.clear_terminal()
+        ascii_welcome()
+        self.arduino = self.initialize_controller(device_port=device_port)
 
     # Main program
     def run(self):
-        execSecuritySystem(self.arduino)
+        exec_security_system(self.arduino)
 
         while True:
             command = input("$ ")
             
-            if not self.executeCommand(self.arduino, command):
+            if not self.execute_command(self.arduino, command):
                 print("Invalid command! Try 'help' for a list of commands.")
                 print()
 
-
-    # Welcome message
-    def welcome(self):
-        # Prints welcome message
-        print("""
-            
-         ____                       _     _   _                      
-        / ___| _ __ ___   __ _ _ __| |_  | | | | ___  _ __ ___   ___ 
-        \___ \| '_ ` _ \ / _` | '__| __| | |_| |/ _ \| '_ ` _ \ / _ \\
-         ___) | | | | | | (_| | |  | |_  |  _  | (_) | | | | | |  __/
-        |____/|_| |_| |_|\__,_|_|   \__| |_| |_|\___/|_| |_| |_|\___|
-                                                             by GOATS
-
-        """)
-        print("Initializing Smart Home System...")
-
-
     # Controller Setup
-    def initializeController(self, device_port = None):
+    @staticmethod
+    def initialize_controller(device_port=None):
         print("Starting serial connection...")
-        controller = SerialController(device_port, 9600, 3)
+        controller_obj = SerialController(device_port, 9600, 3)
         print("Serial connection established!")
         print()
-        return controller
-
+        return controller_obj
 
     # Checks if the given command is valid and executes it
     # Returns False when command is invalid, True otherwise
-    def executeCommand(self, controller: SerialController, cmd: str) -> bool:
+    def execute_command(self, controller: SerialController, cmd: str) -> bool:
         if len(cmd) == 0:
             return False
 
@@ -66,14 +48,13 @@ class CliInterface:
 
         # Ends program on 'exit' command
         if cmd_type == "exit" or cmd_type == "quit":
-            self.endProgram(controller)
+            self.end_program(controller)
             exit()
         elif cmd_type == "help":
             self.help()
         elif cmd_type == "info":
             self.info()
         elif cmd_type == "get":
-            cmd_param1 = None
             try:
                 # Tries to get first command parameter
                 cmd_param1 = cmd_data[1]
@@ -82,23 +63,27 @@ class CliInterface:
             
             if cmd_param1 == "temperature":
                 temp_celsius = getTemp(controller)
-                temp_farenheit = temp_celsius * 1.8 + 32
-                print(f"Current Temperature: {temp_celsius:.1f}ºC / {temp_farenheit:.1f}ºF")
+                temp_fahrenheit = temp_celsius * 1.8 + 32
+                print(f"Current Temperature: {temp_celsius:.1f}ºC / {temp_fahrenheit:.1f}ºF")
             elif cmd_param1 == "humidity":
                 print(f"Current Humidity Percentage: {getHumidity(controller):.2f}%")
             elif cmd_param1 == "lights":
-                print("Current lights state: {}".format("ON" if getLightsState(controller) else "OFF"))
+                print("Current lights state: {}".format("ON" if get_lights_state(controller) else "OFF"))
             elif cmd_param1 == "brightness":
                 print(f"Current brightness percentage: {getBrightness(controller)}%")
             elif cmd_param1 == "flames":
-                print("Current flame status: {}".format("Flames detected!" if getFlameStatus(controller) else "No flames"))
+                print("Current flame status: {}".format(
+                    "Flames detected!" if getFlameStatus(controller) else "No flames")
+                )
             elif cmd_param1 == "lightcontrol":
-                print(f"Current light control mode: {getLightControlMode(controller)}")
+                print(f"Current light control mode: {get_light_control_mode(controller)}")
+            elif cmd_param1 == "brightnessmode":
+                print(f"Current brightness mode: {get_brightness_mode(controller)}")
+            elif cmd_param1 == "brightnesslevel":
+                print("Current brightness level: {}".format(get_brightness_level(controller).strip("\n")))
             else:
                 return False
         elif cmd_type == "set":
-            cmd_param1 = None
-            cmd_param2 = None
             try:
                 # Tries to get first and second command parameters
                 cmd_param1 = cmd_data[1]
@@ -107,30 +92,31 @@ class CliInterface:
                 return False
 
             if cmd_param1 == "lights":
-                if getLightControlMode(controller) == "Remote":
+                if get_light_control_mode(controller) == "Remote":
                     print("Invalid action! Current light control mode is: Remote")
                     print()
                     return True
                     
                 # Sets lights ON/OFF
                 if cmd_param2 == "on" or cmd_param2 == "off":
-                    success = setLightsState(controller, True if cmd_param2 == "on" else False)
+                    success = set_lights_state(controller, True if cmd_param2 == "on" else False)
                     if success:
                         print("Lights state successfully set!") 
                         print()
                         return True
                     else:
                         print("Error occurred while trying to set lights state! Try again.")
+                        print()
 
                 # Sets lights color
                 if cmd_param2 == "white" or cmd_param2 == "red" or cmd_param2 == "green" or cmd_param2 == "blue":
-                    lights_on = getLightsState(controller)
+                    lights_on = get_lights_state(controller)
                     if not lights_on:
                         print("Invalid action! Current lights state is: OFF")
                         print()
                         return True
 
-                    success = setLightsColor(controller, cmd_param2)
+                    success = set_lights_color(controller, cmd_param2)
                     if success:
                         print(f"Lights color successfully set to {cmd_param2}!")
                         print()
@@ -144,16 +130,52 @@ class CliInterface:
                     return False
 
             elif cmd_param1 == "lightcontrol":
-                if cmd_param2 == "program" or cmd_param2 == "remote":
-                    success = setLightControlMode(controller, cmd_param2)
+                if cmd_param2 == "app" or cmd_param2 == "remote":
+                    success = set_light_control_mode(controller, cmd_param2)
                     if success:
                         print(f"Light control mode successfully set to {cmd_param2}!")
+                        print()
                     else:
                         print("Error occurred while trying to set light control mode! Try again.")
+                        print()
+                    return True
+
+            elif cmd_param1 == "brightnessmode":
+                if cmd_param2 == "manual" or cmd_param2 == "auto":
+                    success = set_brightness_mode(controller, cmd_param2)
+                    if success:
+                        print(f"Brightness mode successfully set to {cmd_param2}!")
+                        print()
+                    else:
+                        print("Error occurred while trying to set brightness mode! Try again.")
+                        print()
+                    return True
+
+            elif cmd_param1 == "brightnesslevel":
+                try:
+                    brightness_level = int(cmd_param2)
+
+                    if not 20 <= brightness_level <= 80:
+                        print("Brightness value must be a number between 20 and 80!")
+                        print()
+                        return True
+
+                    success = set_brightness_level(controller, brightness_level)
+                    if success:
+                        print(f"Brightness level successfully set to {brightness_level}!")
+                        print()
+                    else:
+                        print("Error occurred while trying to set brightness level! Try again.")
+                        print()
+                except ValueError:
+                    print("Brightness value must be an integer!")
+                    print()
+
+                return True
+
             else:
                 return False
         elif cmd_type == "trigger":
-            cmd_param1 = None
             try:
                 # Tries to get first command parameter
                 cmd_param1 = cmd_data[1]
@@ -161,14 +183,14 @@ class CliInterface:
                 return False
 
             if cmd_param1 == "securityalarm":
-                success = activateSecurityAlarmAndDangerLED(controller)
+                success = activate_security_alarm_and_danger_led(controller)
                 if success:
                     print("Alarm successfully activated!")
                 else:
                     print("Failed to activate alarm! Try again.")
                 return True
             elif cmd_param1 == "firealarm":
-                success = activateFireAlarm(controller)
+                success = activate_fire_alarm(controller)
                 if success:
                     print("Alarm successfully activated!")
                 else:
@@ -182,33 +204,30 @@ class CliInterface:
         print()
         return True
 
-
     def info(self):
         # TODO
         return
 
-
     # Help
-    def help(self):
+    @staticmethod
+    def help():
         print("Command List")
         print("--------------------")
         for cmd in help_commands:
             print(cmd)
 
-
-    # 'Clear' terminal
-    def clearTerminal(self):
+    @staticmethod
+    def clear_terminal():
         os.system('cls' if os.name == 'nt' else 'clear')
 
-
-    def endProgram(self, controller: SerialController):
+    def end_program(self, controller: SerialController):
         print("Closing serial connection...")
         # Closes serial connection
         controller.close()
         print("Serial connection closed!")
         print("Ending program...")
         sleep(3)
-        self.clearTerminal()
+        self.clear_terminal()
 
 
 if __name__ == '__main__':

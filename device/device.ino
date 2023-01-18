@@ -181,14 +181,19 @@ enum controller_keys {
 
 // Variables
 char op_code_data[20];
-bool lightsState = false;
-uint8_t currentDoorButtonState;
+bool lightsState = false;                     // true - ON | false - OFF
+uint8_t currentDoorButtonState;               // 0 - Not Pressed | 1 - Pressed
 uint8_t currentAlarmStopButtonState = 0;      // 0 - OFF | 1 - ON
 uint8_t currentEnvironmentBrightness = 0;
-uint16_t currentFlameStatus;
+uint16_t currentFlameStatus;                  // 0 - No flames | 1 - Flames
 uint8_t currentLightControlMode = 0;          // 0 - Program | 1 - Controller
+uint8_t currentBrightnessMode = 0;            // 0 - Manual | 1 - Auto
+uint8_t brightnessLevel = 30;                 // Brightness level at which the lights should be turned on (when in auto mode)
 uint8_t currentLightAnimation = 0;            // 0 - No animation | 1 - Flash | 2 - Strobe | 3 - Fade | 4 - Smooth
 bool staticColor = 0;                         // Stores if the current light mode is static (i.e. not an animation) or not
+uint8_t light_R = 0;                          // Stores the current lights RED color value
+uint8_t light_G = 0;                          // Stores the current lights GREEN color value
+uint8_t light_B = 0;                          // Stores the current lights BLUE color value
 
 
 // DHT Sensor Setup
@@ -216,6 +221,7 @@ void loop() {
   getCurrentEnvironmentBrightness();
   getCurrentFlameStatus();
   executeColorCommand();
+  updateLightsBasedOnBrightness();
 }
 
 /* FUNCTIONS */
@@ -337,9 +343,31 @@ void switchLights() {
 
 // Sets Lights Color
 void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
-  analogWrite(LIGHTS_R_PIN, red);
-  analogWrite(LIGHTS_G_PIN, green);
-  analogWrite(LIGHTS_B_PIN, blue);
+  // Updates RGB light values
+  light_R = red;
+  light_G = green;
+  light_B = blue;
+
+  if (light_R != 0 || light_G != 0 || light_B != 0) {
+    lightsState = true;
+  } else {
+    lightsState = false;
+  }
+}
+
+// Updates current lights state based on current brightness mode
+void updateLightsBasedOnBrightness() {
+  if (currentBrightnessMode == 1 && currentEnvironmentBrightness > brightnessLevel) {
+    analogWrite(LIGHTS_R_PIN, 0);
+    analogWrite(LIGHTS_G_PIN, 0);
+    analogWrite(LIGHTS_B_PIN, 0);
+    lightsState = false;
+  } else {
+    analogWrite(LIGHTS_R_PIN, light_R);
+    analogWrite(LIGHTS_G_PIN, light_G);
+    analogWrite(LIGHTS_B_PIN, light_B);
+    lightsState = true;
+  }
 }
 
 // Gets lights input from IR Controller
@@ -603,6 +631,7 @@ void receiveOpCode() {
         Serial.println("#D12$0");
       }
     } else if (strcmp(op_code, "P13") == 0) {
+      // Returns whether light color was successfully updated
       if (data[0] == 'R') {
         lightsState = true;
         setLightsRGBColor(255,0,0);
@@ -623,8 +652,33 @@ void receiveOpCode() {
         Serial.println("#D13$0");
       }
     } else if (strcmp(op_code, "P14") == 0) {
-        Serial.println("#D14$1");
-        activateFireAlarm();      
+      // Returns whether the fire alarm was successfully triggered
+      Serial.println("#D14$1");
+      activateFireAlarm();      
+    } else if (strcmp(op_code, "P15") == 0) {
+      // Returns the current brightness mode
+      Serial.print("#D15$");
+      Serial.println(currentBrightnessMode);
+    } else if (strcmp(op_code, "P16") == 0) {
+      // Returns whether the brightness mode was succesfully updated
+      if (data[0] == '0') {
+        currentBrightnessMode = 0;
+        Serial.println("#D16$1");
+      } else if (data[0] == '1') {
+        currentBrightnessMode = 1;
+        Serial.println("#D16$1");        
+      } else {
+        Serial.println("#D16$0");
+      }
+    } else if (strcmp(op_code, "P17") == 0) {
+      // Returns current brightness level
+      Serial.print("#D17$");
+      Serial.println(brightnessLevel);
+    } else if (strcmp(op_code, "P18") == 0) {
+      // Returns whether the brightness level was successfully updated
+      brightnessLevel = (((int) data[0]) - 48) * 10;
+      brightnessLevel += ((int) data[1]) - 48;
+      Serial.println("#D18$1");
     }
   }
 }

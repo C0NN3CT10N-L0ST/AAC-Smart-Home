@@ -1,42 +1,42 @@
 from controller import SerialController
-from utils.art import artPinLock
+from utils.ascii import ascii_pin_lock
 from maskpass import askpass
 
 
 # Executes security system which unlocks the door and the internal system
-def execSecuritySystem(controller: SerialController):
+def exec_security_system(controller: SerialController):
     print("Door is locked!")
     print("Press [ENTER] to unlock.")
     input()
 
-    artPinLock()
-    if not unlockSecuritySystem(controller):
-        activateSecurityMeasures()
+    ascii_pin_lock()
+    if not unlock_security_system(controller):
+        activate_security_measures()
 
     print("Press [BUTTON] to open door!")
     print()
 
     # Gets button input to unlock the door
-    getDoorButtonInput(controller)
+    get_door_button_input(controller)
 
     print("Door open! You're in.")
 
 
 # Deactivates Security System by entering the pin code
-def unlockSecuritySystem(controller: SerialController) -> bool:
+def unlock_security_system(controller: SerialController) -> bool:
     tries = 3
 
-    while (tries > 0):
+    while tries > 0:
         print("Tries left:", tries)
         print()
         tries -= 1
 
-        pin_input = getPinCodeInput()
+        pin_input = get_pin_code_input()
         while pin_input is None:
-            pin_input = getPinCodeInput()
+            pin_input = get_pin_code_input()
 
-        pin_code_check = checkPinCode(controller, pin_input)
-        if (pin_code_check):
+        pin_code_check = check_pin_code(controller, pin_input)
+        if pin_code_check:
             print("Pin Correct! Access acquired.")
             print()
             return True
@@ -48,7 +48,7 @@ def unlockSecuritySystem(controller: SerialController) -> bool:
 
 
 # Gets and sanitizes pin input
-def getPinCodeInput():
+def get_pin_code_input():
     pin_input = askpass("Enter pin: ")
 
     if len(pin_input) != 4:
@@ -65,11 +65,11 @@ def getPinCodeInput():
 
 
 # Gets button input which gets door open
-def getDoorButtonInput(controller: SerialController):
+def get_door_button_input(controller: SerialController):
     open = False
     while not open:
-        controller.sendCommand("#P08")
-        cmd_output = controller.receiveCommand("#D08")
+        controller.send_command("#P08")
+        cmd_output = controller.receive_command("#D08")
         try:
             if int(cmd_output) == 0:
                 return
@@ -80,27 +80,27 @@ def getDoorButtonInput(controller: SerialController):
 
 
 # Checks whether Pin Code is correct
-def checkPinCode(controller: SerialController, pinCode: int) -> bool:
-    controller.sendCommand(f"#P02${pinCode}")
-    pin_code = controller.receiveCommand("#D02")
-    pin_code = int(pin_code)
-    return True if pin_code == 1 else False
+def check_pin_code(controller: SerialController, pin_code: int) -> bool:
+    controller.send_command(f"#P02${pin_code}")
+    data = controller.receive_command("#D02")
+    data = int(data)
+    return True if data == 1 else False
 
 
 # Activates Security Measures (i.e. fires alarm, etc)
-def activateSecurityMeasures():
-    activateSecurityAlarmAndDangerLED()
+def activate_security_measures():
+    activate_security_alarm_and_danger_led()
 
 
 # Fires security alarm
-def activateSecurityAlarmAndDangerLED(controller: SerialController):
-    controller.sendCommand('#P07')
-    data = int(controller.receiveCommand('#D07'))
+def activate_security_alarm_and_danger_led(controller: SerialController):
+    controller.send_command('#P07')
+    data = int(controller.receive_command('#D07'))
     return True if data else False
 
 
 # Triggers fire alarm
-def activateFireAlarm(controller: SerialController):
-    controller.sendCommand('#P14')
-    data = int(controller.receiveCommand('#D14'))
+def activate_fire_alarm(controller: SerialController):
+    controller.send_command('#P14')
+    data = int(controller.receive_command('#D14'))
     return True if data else False

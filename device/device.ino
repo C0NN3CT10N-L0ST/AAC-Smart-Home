@@ -295,8 +295,7 @@ void activateSecurityAlarm() {
       lightsState = false;
     }
 
-    int idle = note_duration * 1.30;
-    delay(idle);
+    delay(244);
     
     noTone(BUZZER_PIN);
   }
@@ -306,24 +305,29 @@ void activateSecurityAlarm() {
 }
 
 // Triggers fire alarm
-void activateFireAlarm() {
-  for (uint8_t i = 0; i < 255; i++) {
+void activateFireAlarm() {  
+  for (uint8_t i = 0; i < 120; i++) {
     getAlarmSTOPInput();
     // Stops alarm upon pressing SW2 button
     if (!currentAlarmStopButtonState) break;
 
     // Activates RED LED and RGB LED (in yellow)
-    digitalWrite(LED2_PIN, HIGH);
-    setLightsRGBColor(255,255,0);
-    lightsState = true;
-    delay(2000);
+    if ((i + 10) % 10 == 0) {
+      digitalWrite(LED2_PIN, HIGH);
+      setLightsRGBColor(255,255,0);
+      lightsState = true;
+    } else if ((i + 10) % 5 == 0) {
+      // Deactivate LEDs
+      digitalWrite(LED2_PIN, LOW);
+      setLightsRGBColor(0,0,0);
+      lightsState = false;
+    }
 
-    // Deactivate LEDs
-    digitalWrite(LED2_PIN, LOW);
-    setLightsRGBColor(0,0,0);
-    lightsState = false;
-    delay(1200);
+    delay(300);      
   }
+  digitalWrite(LED2_PIN, LOW);
+  setLightsRGBColor(0,0,0);
+  lightsState = false;
 } 
 
 // Triggers Security Measures
@@ -353,6 +357,8 @@ void setLightsRGBColor(uint8_t red, uint8_t green, uint8_t blue) {
   } else {
     lightsState = false;
   }
+
+  updateLightsBasedOnBrightness();
 }
 
 // Updates current lights state based on current brightness mode
@@ -361,6 +367,11 @@ void updateLightsBasedOnBrightness() {
     analogWrite(LIGHTS_R_PIN, 0);
     analogWrite(LIGHTS_G_PIN, 0);
     analogWrite(LIGHTS_B_PIN, 0);
+    lightsState = false;
+  } else if (light_R == 0 && light_G == 0 && light_B == 0) {
+    analogWrite(LIGHTS_R_PIN, light_R);
+    analogWrite(LIGHTS_G_PIN, light_G);
+    analogWrite(LIGHTS_B_PIN, light_B);
     lightsState = false;
   } else {
     analogWrite(LIGHTS_R_PIN, light_R);

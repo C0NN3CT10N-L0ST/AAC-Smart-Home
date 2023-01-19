@@ -94,38 +94,27 @@ class CliInterface:
             if cmd_param1 == "lights":
                 if get_light_control_mode(controller) == "Remote":
                     print("Invalid action! Current light control mode is: Remote")
-                    print()
-                    return True
-                    
+
                 # Sets lights ON/OFF
-                if cmd_param2 == "on" or cmd_param2 == "off":
+                elif cmd_param2 == "on" or cmd_param2 == "off":
                     success = set_lights_state(controller, True if cmd_param2 == "on" else False)
                     if success:
                         print("Lights state successfully set!") 
-                        print()
-                        return True
                     else:
                         print("Error occurred while trying to set lights state! Try again.")
-                        print()
 
                 # Sets lights color
-                if cmd_param2 == "white" or cmd_param2 == "red" or cmd_param2 == "green" or cmd_param2 == "blue":
+                elif cmd_param2 == "white" or cmd_param2 == "red" or cmd_param2 == "green" or cmd_param2 == "blue":
                     lights_on = get_lights_state(controller)
                     if not lights_on:
                         print("Invalid action! Current lights state is: OFF")
-                        print()
-                        return True
 
                     success = set_lights_color(controller, cmd_param2)
                     if success:
                         print(f"Lights color successfully set to {cmd_param2}!")
-                        print()
-                        return True
                     else:
                         print("Error occurred while trying to set lights color! Try again.")
-                        print()
-                        return True
-                
+
                 else:
                     return False
 
@@ -134,22 +123,16 @@ class CliInterface:
                     success = set_light_control_mode(controller, cmd_param2)
                     if success:
                         print(f"Light control mode successfully set to {cmd_param2}!")
-                        print()
                     else:
                         print("Error occurred while trying to set light control mode! Try again.")
-                        print()
-                    return True
 
             elif cmd_param1 == "brightnessmode":
                 if cmd_param2 == "manual" or cmd_param2 == "auto":
                     success = set_brightness_mode(controller, cmd_param2)
                     if success:
                         print(f"Brightness mode successfully set to {cmd_param2}!")
-                        print()
                     else:
                         print("Error occurred while trying to set brightness mode! Try again.")
-                        print()
-                    return True
 
             elif cmd_param1 == "brightnesslevel":
                 try:
@@ -157,21 +140,14 @@ class CliInterface:
 
                     if not 20 <= brightness_level <= 80:
                         print("Brightness value must be a number between 20 and 80!")
-                        print()
-                        return True
 
                     success = set_brightness_level(controller, brightness_level)
                     if success:
                         print(f"Brightness level successfully set to {brightness_level}!")
-                        print()
                     else:
                         print("Error occurred while trying to set brightness level! Try again.")
-                        print()
                 except ValueError:
                     print("Brightness value must be an integer!")
-                    print()
-
-                return True
 
             else:
                 return False
@@ -188,14 +164,12 @@ class CliInterface:
                     print("Alarm successfully activated!")
                 else:
                     print("Failed to activate alarm! Try again.")
-                return True
             elif cmd_param1 == "firealarm":
                 success = activate_fire_alarm(controller)
                 if success:
                     print("Alarm successfully activated!")
                 else:
                     print("Failed to activate alarm! Try again.")
-                return True
             else:
                 return False
         else:

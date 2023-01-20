@@ -88,7 +88,7 @@ class CliInterface:
             elif cmd_param1 == "brightnessmode":
                 print(f"Current brightness mode: {get_brightness_mode(controller)}")
             elif cmd_param1 == "brightnesslevel":
-                print("Current brightness level: {}".format(get_brightness_level(controller).strip("\n")))
+                print("Current brightness level: {}%".format(get_brightness_level(controller).strip("\n")))
             else:
                 return False
         elif cmd_type == "set":
@@ -116,6 +116,8 @@ class CliInterface:
                     lights_on = get_lights_state(controller)
                     if not lights_on:
                         print("Invalid action! Current lights state is: OFF")
+                        print()
+                        return True
 
                     success = set_lights_color(controller, cmd_param2)
                     if success:
@@ -213,6 +215,7 @@ class CliInterface:
     # Help
     @staticmethod
     def help():
+        print()
         print("Command List")
         print("--------------------")
         print("exit/quit                                        Exist program")
@@ -236,8 +239,6 @@ class CliInterface:
         print("SET firealarmstatus <off/auto>                   Sets fire alarm status")
         print("TRIGGER securityalarm                            Triggers security alarm")
         print("TRIGGER firealarm                                Triggers fire alarm")
-        for cmd in help_commands:
-            print(cmd)
 
     @staticmethod
     def clear_terminal():

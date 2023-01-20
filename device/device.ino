@@ -318,6 +318,8 @@ void activateFireAlarm() {
     // Stops alarm upon pressing SW2 button
     if (!currentAlarmStopButtonState) break;
 
+    tone(BUZZER_PIN, 10);
+
     // Activates RED LED and RGB LED (in yellow)
     if ((i + 10) % 10 == 0) {
       digitalWrite(LED2_PIN, HIGH);
@@ -330,7 +332,8 @@ void activateFireAlarm() {
       lightsState = false;
     }
 
-    delay(300);      
+    delay(300);
+    noTone(BUZZER_PIN);
   }
   digitalWrite(LED2_PIN, LOW);
   setLightsRGBColor(0,0,0);

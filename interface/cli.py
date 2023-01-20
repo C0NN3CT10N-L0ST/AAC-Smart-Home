@@ -5,6 +5,7 @@ from utils.environment import *
 from utils.lights import *
 from utils.help import help_commands
 from utils.ascii import ascii_welcome
+from colorama import Fore, Style
 
 
 class CliInterface:
@@ -21,8 +22,9 @@ class CliInterface:
         exec_security_system(self.arduino)
 
         while True:
-            command = input("$ ")
-            
+            command = input(Fore.LIGHTBLUE_EX + Style.DIM + "$ ")
+            print(Fore.RESET + Style.RESET_ALL + "", end='')
+
             if not self.execute_command(self.arduino, command):
                 print("Invalid command! Try 'help' for a list of commands.")
                 print()
@@ -201,6 +203,10 @@ class CliInterface:
         return True
 
     def info(self):
+        # print("System Info")
+        # print("--------------------")
+        # print("--- Lights ---")
+        # print("Current lights state: {}".format("ON" if get_lights_state(controller) else "OFF"))
         # TODO
         return
 
@@ -209,6 +215,27 @@ class CliInterface:
     def help():
         print("Command List")
         print("--------------------")
+        print("exit/quit                                        Exist program")
+        print("help                                             This menu")
+        print("GET lights                                       Returns current lights state")
+        print("GET temperature                                  Returns current temperature")
+        print("GET humidity                                     Returns current humidity percentage")
+        print("GET brightness                                   Returns current brightness percentage")
+        print("GET flames                                       Returns whether flames are currently being detected")
+        print("GET firealarmstatus                              Returns current fire alarm status")
+        print("GET lightcontrol                                 Returns current light control mode")
+        print("GET brightnessmode                               Returns current brightness mode")
+        print("GET brightnesslevel                              Returns current brightness level")
+        print("GET brightnesscontrol                            Returns current brightness control mode")
+        print("SET lights <on/off>                              Turns lights ON/OFF")
+        print("SET lights <color>                               Sets lights color")
+        print("SET lightcontrol <app/remote>                    Sets lights control mode")
+        print("SET brightnessmode <off/auto>                    Sets brightness mode")
+        print("SET brightnesslevel <20-80>                      Sets brightness level")
+        print("SET brightnesscontrol <app/potentiometer>        Sets brightness control mode")
+        print("SET firealarmstatus <off/auto>                   Sets fire alarm status")
+        print("TRIGGER securityalarm                            Triggers security alarm")
+        print("TRIGGER firealarm                                Triggers fire alarm")
         for cmd in help_commands:
             print(cmd)
 

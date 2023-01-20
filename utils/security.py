@@ -11,7 +11,7 @@ def exec_security_system(controller: SerialController):
 
     ascii_pin_lock()
     if not unlock_security_system(controller):
-        activate_security_measures()
+        activate_security_measures(controller)
 
     print("Press [BUTTON] to open door!")
     print()
@@ -90,8 +90,8 @@ def check_pin_code(controller: SerialController, pin_code: int) -> bool:
 
 
 # Activates Security Measures (i.e. fires alarm, etc)
-def activate_security_measures():
-    activate_security_alarm_and_danger_led()
+def activate_security_measures(controller: SerialController):
+    activate_security_alarm_and_danger_led(controller)
 
 
 # Fires security alarm

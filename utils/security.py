@@ -53,12 +53,14 @@ def get_pin_code_input():
 
     if len(pin_input) != 4:
         print("Pin must have 4 digits!")
+        print()
         return None
 
     try:
         pin_input = int(pin_input)
     except ValueError:
         print("Pin must be an integer!")
+        print()
         return None
 
     return pin_input
@@ -103,4 +105,19 @@ def activate_security_alarm_and_danger_led(controller: SerialController):
 def activate_fire_alarm(controller: SerialController):
     controller.send_command('#P14')
     data = int(controller.receive_command('#D14'))
+    return True if data else False
+
+
+# Gets current fire alarm status
+def get_fire_alarm_status(controller: SerialController) -> bool:
+    controller.send_command('#P19')
+    data = int(controller.receive_command('#D19'))
+    return True if data else False
+
+
+# Sets current fire alarm status
+def set_fire_alarm_status(controller: SerialController, value: str) -> bool:
+    payload = f"#P20${1 if value == 'auto' else 0}"
+    controller.send_command(payload)
+    data = int(controller.receive_command('#D20'))
     return True if data else False

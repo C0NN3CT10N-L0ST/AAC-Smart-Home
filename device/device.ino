@@ -184,8 +184,9 @@ char op_code_data[20];
 bool lightsState = false;                     // true - ON | false - OFF
 uint8_t currentDoorButtonState;               // 0 - Not Pressed | 1 - Pressed
 uint8_t currentAlarmStopButtonState = 0;      // 0 - OFF | 1 - ON
-uint8_t currentEnvironmentBrightness = 0;
+uint8_t currentEnvironmentBrightness = 0;     // Stores current environment brightness
 uint16_t currentFlameStatus;                  // 0 - No flames | 1 - Flames
+bool fireAlarmStatus = true;                  // false - OFF | true - Auto 
 uint8_t currentLightControlMode = 0;          // 0 - Program | 1 - Controller
 uint8_t currentBrightnessMode = 0;            // 0 - Manual | 1 - Auto
 uint8_t brightnessLevel = 30;                 // Brightness level at which the lights should be turned on (when in auto mode)
@@ -219,7 +220,7 @@ void loop() {
   receiveOpCode();
   getDoorButtonState();
   getCurrentEnvironmentBrightness();
-  getCurrentFlameStatus();
+  getCurrentFlameStatusAndActivateAlarm();
   executeColorCommand();
   updateLightsBasedOnBrightness();
 }
@@ -269,8 +270,11 @@ void getCurrentEnvironmentBrightness() {
 }
 
 // Gets the current flame state
-void getCurrentFlameStatus() {
+void getCurrentFlameStatusAndActivateAlarm() {
   currentFlameStatus = digitalRead(FLAME_SENSOR_PIN);
+  if (fireAlarmStatus && currentFlameStatus) {
+    activateFireAlarm();
+  }
 }
 
 // Triggers security alarm
@@ -330,9 +334,10 @@ void activateFireAlarm() {
   lightsState = false;
 } 
 
-// Triggers Security Measures
-void triggerSecurityMeasures() {
-  // TODO
+
+// Updates current Alarm STOP button state
+void getAlarmSTOPInput() {
+  currentAlarmStopButtonState = digitalRead(SW2_PIN);
 }
 
 // Switches lights ON/OFF
@@ -567,11 +572,6 @@ void executeColorCommand() {
   }
 }
 
-// Updates current Alarm STOP button state
-void getAlarmSTOPInput() {
-  currentAlarmStopButtonState = digitalRead(SW2_PIN);
-}
-
 // TODO
 void receiveOpCode() {
   if (Serial.available()) {
@@ -690,6 +690,27 @@ void receiveOpCode() {
       brightnessLevel = (((int) data[0]) - 48) * 10;
       brightnessLevel += ((int) data[1]) - 48;
       Serial.println("#D18$1");
+    } else if (strcmp(op_code, "P19") == 0) {
+      // Returns current fire alarm status
+      int fireAlarmStatusData;
+      if (fireAlarmStatus) {
+        fireAlarmStatusData = 1;
+      } else {
+        fireAlarmStatusData = 0;
+      }
+      Serial.print("#D19$");
+      Serial.println(fireAlarmStatusData);
+    } else if (strcmp(op_code, "P20") == 0) {
+      // Returns whether the fire alarm status was succesfully updated
+      if (data[0] == '1') {
+        fireAlarmStatus = true;
+        Serial.println("#D20$1");
+      } else if (data[0] == '0') {
+        fireAlarmStatus = false;
+        Serial.println("#D20$1");
+      } else {
+        Serial.println("#D20$0");
+      }
     }
   }
 }

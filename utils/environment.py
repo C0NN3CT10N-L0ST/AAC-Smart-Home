@@ -2,31 +2,31 @@ from controller import SerialController
 
 
 # Gets current temperature in Celsius
-def getTemp(controller: SerialController) -> float:
+def get_temp(controller: SerialController) -> float:
     controller.send_command('#P03')
     return float(controller.receive_command('#D03'))
 
 
 # Sets ideal temperature
-def setTemp(controller: SerialController, temp: int) -> bool:
+def set_temp(controller: SerialController, temp: int) -> bool:
     controller.send_command(f"#P08${temp}")
     return
 
 
 # Gets current humidity percentage
-def getHumidity(controller: SerialController) -> float:
+def get_humidity(controller: SerialController) -> float:
     controller.send_command('#P04')
     return float(controller.receive_command('#D04'))
 
 
 # Gets current environment brightness percentage
-def getBrightness(controller: SerialController) -> int:
+def get_brightness(controller: SerialController) -> int:
     controller.send_command("#P09")
     return int(controller.receive_command("#D09"))
 
 
 # Gets current flame status
-def getFlameStatus(controller: SerialController) -> bool:
+def get_flame_status(controller: SerialController) -> bool:
     controller.send_command("#P10")
     flame_status = int(controller.receive_command("#D10"))
     

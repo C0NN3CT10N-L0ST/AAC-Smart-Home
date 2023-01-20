@@ -13,7 +13,7 @@ class SerialController:
     timeout = 0
 
     # Serial Connection Setup
-    def __init__(self, device_port = None, baud_rate = 9600, timeout = 0):
+    def __init__(self, device_port=None, baud_rate = 9600, timeout = 0):
         self.port = device_port
         self.baud_rate = baud_rate
         self.timeout = timeout

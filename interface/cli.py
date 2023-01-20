@@ -1,6 +1,6 @@
 import os
 from time import sleep
-from utils.security import exec_security_system, activate_security_alarm_and_danger_led, activate_fire_alarm
+from utils.security import *
 from utils.environment import *
 from utils.lights import *
 from utils.help import help_commands
@@ -62,19 +62,21 @@ class CliInterface:
                 return False
             
             if cmd_param1 == "temperature":
-                temp_celsius = getTemp(controller)
+                temp_celsius = get_temp(controller)
                 temp_fahrenheit = temp_celsius * 1.8 + 32
                 print(f"Current Temperature: {temp_celsius:.1f}ºC / {temp_fahrenheit:.1f}ºF")
             elif cmd_param1 == "humidity":
-                print(f"Current Humidity Percentage: {getHumidity(controller):.2f}%")
+                print(f"Current Humidity Percentage: {get_humidity(controller):.2f}%")
             elif cmd_param1 == "lights":
                 print("Current lights state: {}".format("ON" if get_lights_state(controller) else "OFF"))
             elif cmd_param1 == "brightness":
-                print(f"Current brightness percentage: {getBrightness(controller)}%")
+                print(f"Current brightness percentage: {get_brightness(controller)}%")
             elif cmd_param1 == "flames":
                 print("Current flame status: {}".format(
-                    "Flames detected!" if getFlameStatus(controller) else "No flames")
+                    "Flames detected!" if get_flame_status(controller) else "No flames")
                 )
+            elif cmd_param1 == "firealarmstatus":
+                print("Current fire alarm status is: {}".format("Auto" if get_fire_alarm_status(controller) else "OFF"))
             elif cmd_param1 == "lightcontrol":
                 print(f"Current light control mode: {get_light_control_mode(controller)}")
             elif cmd_param1 == "brightnessmode":
@@ -148,6 +150,14 @@ class CliInterface:
                         print("Error occurred while trying to set brightness level! Try again.")
                 except ValueError:
                     print("Brightness value must be an integer!")
+
+            elif cmd_param1 == "firealarmstatus":
+                if cmd_param2 == "auto" or cmd_param2 == "off":
+                    success = set_fire_alarm_status(controller, cmd_param2)
+                    if success:
+                        print(f"Fire alarm status successfully set to {cmd_param2}!")
+                    else:
+                        print("Error occurred while trying to set fire alarm status! Try again.")
 
             else:
                 return False

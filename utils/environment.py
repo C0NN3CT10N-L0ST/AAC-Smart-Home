@@ -48,3 +48,17 @@ def set_brightness_level(controller: SerialController, value: int) -> bool:
     controller.send_command(payload)
     data = int(controller.receive_command('#D18'))
     return True if data == 1 else False
+
+
+# Gets brightness control mode
+def get_brightness_control_mode(controller: SerialController) -> bool:
+    controller.send_command('#P21')
+    data = int(controller.receive_command('#D21'))
+    return True if data == 1 else False
+
+
+# Sets brightness control mode
+def set_brightness_control_mode(controller: SerialController, value: str) -> bool:
+    controller.send_command(f"#P22${1 if value == 'potentiometer' else 0}")
+    data = int(controller.receive_command('#D22'))
+    return True if data == 1 else False

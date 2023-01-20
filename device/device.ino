@@ -177,6 +177,7 @@ enum controller_keys {
 #define LIGHTS_B_PIN 11
 #define IR_PIN 6
 #define SW2_PIN 3
+#define POTENTIOMETER_PIN A0
 #define PIN_CODE 9999
 
 // Variables
@@ -186,10 +187,11 @@ uint8_t currentDoorButtonState;               // 0 - Not Pressed | 1 - Pressed
 uint8_t currentAlarmStopButtonState = 0;      // 0 - OFF | 1 - ON
 uint8_t currentEnvironmentBrightness = 0;     // Stores current environment brightness
 uint16_t currentFlameStatus;                  // 0 - No flames | 1 - Flames
-bool fireAlarmStatus = true;                  // false - OFF | true - Auto 
+bool fireAlarmStatus = false;                 // false - OFF | true - Auto 
 uint8_t currentLightControlMode = 0;          // 0 - Program | 1 - Controller
 uint8_t currentBrightnessMode = 0;            // 0 - Manual | 1 - Auto
-uint8_t brightnessLevel = 30;                 // Brightness level at which the lights should be turned on (when in auto mode)
+uint8_t brightnessControlMode = 0;            // 0 - App | 1 - Potentiometer
+uint8_t brightnessLevel = 0;                  // Brightness level at which the lights should be turned on (when in auto mode)
 uint8_t currentLightAnimation = 0;            // 0 - No animation | 1 - Flash | 2 - Strobe | 3 - Fade | 4 - Smooth
 bool staticColor = 0;                         // Stores if the current light mode is static (i.e. not an animation) or not
 uint8_t light_R = 0;                          // Stores the current lights RED color value
@@ -221,6 +223,7 @@ void loop() {
   getDoorButtonState();
   getCurrentEnvironmentBrightness();
   getCurrentFlameStatusAndActivateAlarm();
+  updateBrightnessLevelWithPotentiometer();
   executeColorCommand();
   updateLightsBasedOnBrightness();
 }
@@ -338,6 +341,15 @@ void activateFireAlarm() {
 // Updates current Alarm STOP button state
 void getAlarmSTOPInput() {
   currentAlarmStopButtonState = digitalRead(SW2_PIN);
+}
+
+// Updates brightness level based on potentiometer input
+void updateBrightnessLevelWithPotentiometer() {
+  if (brightnessControlMode == 1) {
+    int inputValue = analogRead(POTENTIOMETER_PIN);
+    inputValue = map(inputValue, 0, 1023, 0, 100);
+    brightnessLevel = inputValue;
+  }
 }
 
 // Switches lights ON/OFF
@@ -710,6 +722,21 @@ void receiveOpCode() {
         Serial.println("#D20$1");
       } else {
         Serial.println("#D20$0");
+      }
+    } else if (strcmp(op_code, "P21") == 0) {
+      // Returns the current brightness control mode
+      Serial.print("#D21$");
+      Serial.println(brightnessControlMode);
+    } else if (strcmp(op_code, "P22") == 0) {
+      // Returns whether the brightness control mode was successfully updated
+      if (data[0] == '0') {
+        brightnessControlMode = 0;
+        Serial.println("#D22$1");
+      } else if (data[0] == '1') {
+        brightnessControlMode = 1;
+        Serial.println("#D22$1");
+      } else {
+        Serial.println("#D22$0");
       }
     }
   }

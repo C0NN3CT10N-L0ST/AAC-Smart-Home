@@ -71,6 +71,10 @@ class CliInterface:
                 print("Current lights state: {}".format("ON" if get_lights_state(controller) else "OFF"))
             elif cmd_param1 == "brightness":
                 print(f"Current brightness percentage: {get_brightness(controller)}%")
+            elif cmd_param1 == "brightnesscontrol":
+                print("Current brightness control: {}".format(
+                    "Potentiometer" if get_brightness_control_mode(controller) else "App")
+                )
             elif cmd_param1 == "flames":
                 print("Current flame status: {}".format(
                     "Flames detected!" if get_flame_status(controller) else "No flames")
@@ -158,6 +162,14 @@ class CliInterface:
                         print(f"Fire alarm status successfully set to {cmd_param2}!")
                     else:
                         print("Error occurred while trying to set fire alarm status! Try again.")
+
+            elif cmd_param1 == "brightnesscontrol":
+                if cmd_param2 == "app" or cmd_param2 == "potentiometer":
+                    success = set_brightness_control_mode(controller, cmd_param2)
+                    if success:
+                        print(f"Brightness control successfully set to {cmd_param2}!")
+                    else:
+                        print("Error occurred while trying to set brightness control! Try again.")
 
             else:
                 return False

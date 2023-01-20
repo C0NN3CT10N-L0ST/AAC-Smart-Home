@@ -51,7 +51,7 @@ def set_lights_color(controller: SerialController, color: str) -> bool:
 def get_brightness_mode(controller: SerialController) -> str:
     controller.send_command('#P15')
     data = int(controller.receive_command('#D15'))
-    return "Manual" if data == 0 else "Auto"
+    return "OFF" if data == 0 else "Auto"
 
 
 # Sets current brightness mode

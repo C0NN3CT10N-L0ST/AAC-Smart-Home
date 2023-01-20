@@ -56,7 +56,7 @@ def get_brightness_mode(controller: SerialController) -> str:
 
 # Sets current brightness mode
 def set_brightness_mode(controller: SerialController, value: str) -> bool:
-    payload = '#P16$0' if value == 'manual' else '#P16$1'
+    payload = '#P16$0' if value == 'off' else '#P16$1'
     controller.send_command(payload)
     data = int(controller.receive_command('#D16'))
     return True if data == 1 else False

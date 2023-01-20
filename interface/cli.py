@@ -129,7 +129,7 @@ class CliInterface:
                         print("Error occurred while trying to set light control mode! Try again.")
 
             elif cmd_param1 == "brightnessmode":
-                if cmd_param2 == "manual" or cmd_param2 == "auto":
+                if cmd_param2 == "off" or cmd_param2 == "auto":
                     success = set_brightness_mode(controller, cmd_param2)
                     if success:
                         print(f"Brightness mode successfully set to {cmd_param2}!")
